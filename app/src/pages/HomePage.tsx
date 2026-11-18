@@ -45,7 +45,7 @@ function HomePage(): ReactElement {
     <div className="home-page">
       <header className="home-page__bar">
         <div className="auth-brand">
-          <BrandLogo className="brand-logo" size={40} variant="frosted" />
+          <BrandLogo className="brand-logo" size={44} variant="frosted" />
           Team Building
         </div>
       </header>
