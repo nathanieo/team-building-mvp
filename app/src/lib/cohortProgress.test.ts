@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CohortSummary } from "@team-building-mvp/contracts";
-import { describeNextStep, formatCreated, summarizeCohorts } from "./cohortProgress";
+import { describeNextStep, formatCreated } from "./cohortProgress";
 import { toApiError } from "./api";
 
 function cohort(overrides: Partial<CohortSummary> = {}): CohortSummary {
@@ -19,26 +19,6 @@ function cohort(overrides: Partial<CohortSummary> = {}): CohortSummary {
     ...overrides,
   };
 }
-
-describe("summarizeCohorts", () => {
-  it("returns no completion percent when nobody has joined", () => {
-    expect(summarizeCohorts([cohort()]).completionPercent).toBeNull();
-  });
-
-  it("totals across classes", () => {
-    const totals = summarizeCohorts([
-      cohort({ studentCount: 10, completedCount: 5, teamCount: 2 }),
-      cohort({ studentCount: 2, completedCount: 2, teamCount: 1 }),
-    ]);
-    expect(totals).toEqual({
-      classCount: 2,
-      studentCount: 12,
-      completedCount: 7,
-      completionPercent: 58,
-      teamCount: 3,
-    });
-  });
-});
 
 describe("describeNextStep", () => {
   it("walks the MVP flow in order", () => {

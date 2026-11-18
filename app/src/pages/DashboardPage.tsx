@@ -7,7 +7,6 @@ import { ClassCard } from "../components/ClassCard";
 import { CreateClassDialog } from "../components/CreateClassDialog";
 import { TeamDots } from "../components/TeamDots";
 import { api, ApiError } from "../lib/api";
-import { summarizeCohorts } from "../lib/cohortProgress";
 
 type LoadState =
   | { status: "loading" }
@@ -21,7 +20,7 @@ function greeting(now: Date = new Date()): string {
   return "Good evening";
 }
 
-/** Facilitator home: totals across classes, the class list, and creating a class. */
+/** Facilitator home: greeting, the class list, and creating a class. */
 function DashboardPage({ facilitator }: { facilitator: Facilitator }): ReactElement {
   const { logout, handleSessionExpired } = useAuth();
   const [load, setLoad] = useState<LoadState>({ status: "loading" });
@@ -58,7 +57,6 @@ function DashboardPage({ facilitator }: { facilitator: Facilitator }): ReactElem
   }
 
   const cohorts = load.status === "ready" ? load.cohorts : [];
-  const totals = summarizeCohorts(cohorts);
   const firstName = facilitator.displayName.split(" ").find((part) => !/^(dr|prof|mr|mrs|ms)\.?$/i.test(part));
 
   return (
@@ -90,32 +88,6 @@ function DashboardPage({ facilitator }: { facilitator: Facilitator }): ReactElem
       </section>
 
       <main className="dashboard__main">
-        <section className="stat-strip" aria-label="Totals across your classes">
-          <div className="stat">
-            <span className="stat__label">Classes</span>
-            <span className="stat__value">{totals.classCount}</span>
-          </div>
-          <div className="stat">
-            <span className="stat__label">Students joined</span>
-            <span className="stat__value">{totals.studentCount}</span>
-          </div>
-          <div className="stat">
-            <span className="stat__label">Questionnaires complete</span>
-            <span className="stat__value">
-              {totals.completionPercent === null ? "—" : `${totals.completionPercent}%`}
-              {totals.studentCount > 0 ? (
-                <span className="stat__sub">
-                  {totals.completedCount} of {totals.studentCount}
-                </span>
-              ) : null}
-            </span>
-          </div>
-          <div className="stat">
-            <span className="stat__label">Teams formed</span>
-            <span className="stat__value">{totals.teamCount}</span>
-          </div>
-        </section>
-
         <section aria-labelledby="classes-heading">
           <h2 id="classes-heading" className="section-heading">
             Your classes

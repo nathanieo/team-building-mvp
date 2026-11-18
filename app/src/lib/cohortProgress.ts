@@ -1,26 +1,5 @@
 import type { CohortSummary } from "@team-building-mvp/contracts";
 
-export interface DashboardTotals {
-  classCount: number;
-  studentCount: number;
-  completedCount: number;
-  /** Whole-number percent of joined students who finished, or null with no students. */
-  completionPercent: number | null;
-  teamCount: number;
-}
-
-export function summarizeCohorts(cohorts: readonly CohortSummary[]): DashboardTotals {
-  const studentCount = cohorts.reduce((sum, cohort) => sum + cohort.studentCount, 0);
-  const completedCount = cohorts.reduce((sum, cohort) => sum + cohort.completedCount, 0);
-  return {
-    classCount: cohorts.length,
-    studentCount,
-    completedCount,
-    completionPercent: studentCount === 0 ? null : Math.round((completedCount / studentCount) * 100),
-    teamCount: cohorts.reduce((sum, cohort) => sum + cohort.teamCount, 0),
-  };
-}
-
 export const STATUS_LABELS: Record<CohortSummary["status"], string> = {
   collecting: "Collecting responses",
   "teams-draft": "Teams in review",
