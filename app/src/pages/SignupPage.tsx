@@ -11,10 +11,15 @@ interface FormValues {
   displayName: string;
   email: string;
   password: string;
-  inviteCode: string;
 }
 
-const EMPTY: FormValues = { displayName: "", email: "", password: "", inviteCode: "" };
+const EMPTY: FormValues = { displayName: "", email: "", password: "" };
+
+/**
+ * The API only asks for an invite code when FACILITATOR_INVITE_CODE is set on
+ * the server. This page has no invite field, so explain that case instead.
+ */
+const INVITE_ONLY_MESSAGE = "Sign-ups are invite-only on this site right now. Ask your administrator for access.";
 
 /** Facilitator sign-up, reached from "Join Team Building" on the log-in page. */
 function SignupPage(): ReactElement {
@@ -55,8 +60,10 @@ function SignupPage(): ReactElement {
       navigate("/dashboard", { replace: true });
     } catch (error) {
       if (error instanceof ApiError) {
-        setFieldErrors(error.fieldErrors);
-        setFormError(Object.keys(error.fieldErrors).length > 0 ? null : error.message);
+        const { inviteCode, ...shownErrors } = error.fieldErrors;
+        setFieldErrors(shownErrors);
+        if (inviteCode) setFormError(INVITE_ONLY_MESSAGE);
+        else setFormError(Object.keys(shownErrors).length > 0 ? null : error.message);
       } else {
         setFormError("Something went wrong. Try again.");
       }
@@ -86,7 +93,7 @@ function SignupPage(): ReactElement {
         />
 
         <TextField
-          label="School email"
+          label="Email"
           name="email"
           type="email"
           autoComplete="email"
@@ -115,15 +122,6 @@ function SignupPage(): ReactElement {
               {showPassword ? "Hide" : "Show"}
             </button>
           }
-        />
-
-        <TextField
-          label="Invite code (if you were given one)"
-          name="inviteCode"
-          autoComplete="off"
-          value={values.inviteCode}
-          error={fieldErrors.inviteCode}
-          onChange={(event) => update("inviteCode", event.target.value)}
         />
 
         <button className="button button--primary button--block" type="submit" disabled={submitting}>

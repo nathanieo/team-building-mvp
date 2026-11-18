@@ -102,7 +102,7 @@ function LoginPage(): ReactElement {
 
         <form className="stack" noValidate onSubmit={(event) => void handleSubmit(event)}>
           <TextField
-            label="School email"
+            label="Email"
             name="email"
             type="email"
             autoComplete="email"

@@ -83,7 +83,7 @@ All routes are under `/api`. Errors always look like `{ "error": string, "fieldE
 | `API_HOST` / `API_PORT` | `127.0.0.1` / `8788` | |
 | `SESSION_TTL_HOURS` | `12` | How long a login lasts |
 | `SESSION_COOKIE_SECURE` | `false` | Set to `true` when served over HTTPS |
-| `FACILITATOR_INVITE_CODE` | empty | When set, creating an account requires this code. **Set it before deploying anywhere public.** |
+| `FACILITATOR_INVITE_CODE` | empty | When set, the API requires this code to create an account. The sign-up page has no invite field, so setting it closes sign-up and the page says sign-ups are invite-only. **Set it before deploying anywhere public.** |
 
 ## Before a real pilot
 
