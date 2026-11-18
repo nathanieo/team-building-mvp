@@ -409,56 +409,123 @@ select {
 
 /* ---------- Front page (/) ---------- */
 
-.home {
+/* Logo in a top bar, then one big question with two answer buttons. */
+.home-page {
   display: grid;
-  gap: 28px;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.12), transparent 22rem),
+    linear-gradient(160deg, var(--color-brand) 0%, var(--color-brand-dark) 100%);
+}
+
+.home-page__bar {
+  padding: 20px clamp(16px, 4vw, 40px);
+}
+
+.home-page__main {
+  display: grid;
+  align-content: center;
   justify-items: center;
-  width: min(560px, 100%);
+  gap: 24px;
+  padding: 24px 16px 14vh;
 }
 
 .home__question {
+  max-width: 20ch;
   color: #ffffff;
-  font-size: clamp(1.6rem, 4.5vw, 2.3rem);
+  font-size: clamp(1.45rem, 3.2vw, 2rem);
+  font-weight: 700;
   line-height: 1.2;
+  letter-spacing: -0.01em;
   text-align: center;
-  animation: door-in 480ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  text-wrap: balance;
+}
+
+/* Words of the question rise, grow and come into focus one at a time. */
+.pop-word {
+  display: inline-block;
+  animation: word-pop 560ms cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+  animation-delay: calc(var(--i) * 80ms + 150ms);
+}
+
+@keyframes word-pop {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(0.6em) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
 }
 
 .home__choices {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
 }
 
-/* A big answer button: white, lifts on hover, turns solid green when picked. */
-.choice-card {
-  display: grid;
-  min-height: clamp(110px, 22vw, 150px);
-  place-items: center;
-  border-radius: 18px;
+/* Answer button: white pill with an arrow; outlined and see-through once picked. */
+.choice-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 150px;
+  min-height: 46px;
+  padding: 0 16px 0 22px;
+  border-radius: 999px;
   color: var(--color-heading);
   background: var(--color-surface);
-  box-shadow: 0 24px 60px rgba(9, 32, 26, 0.28);
-  font-size: clamp(1.2rem, 3.5vw, 1.5rem);
-  font-weight: 750;
+  box-shadow: 0 8px 20px rgba(9, 32, 26, 0.18);
+  font-size: 1rem;
+  font-weight: 650;
   text-decoration: none;
-  transition: transform 160ms ease, color 180ms ease, background-color 180ms ease;
-  animation: door-in 480ms cubic-bezier(0.2, 0.7, 0.2, 1) 120ms both;
+  transition: transform 160ms ease, color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+  animation: door-in 520ms cubic-bezier(0.2, 0.7, 0.2, 1) 780ms both;
 }
 
-.choice-card + .choice-card {
-  animation-delay: 200ms;
+.choice-pill + .choice-pill {
+  animation-delay: 880ms;
 }
 
-.choice-card:hover {
-  transform: translateY(-3px);
+.choice-pill__arrow {
+  flex: none;
+  color: var(--color-brand);
+  transition: transform 160ms ease, color 180ms ease;
 }
 
-.choice-card:active,
-.choice-card--pressed {
+.choice-pill:hover {
+  transform: translateY(-2px);
+}
+
+.choice-pill:hover .choice-pill__arrow {
+  transform: translateX(3px);
+}
+
+.choice-pill:active,
+.choice-pill--pressed {
   color: #ffffff;
-  background: var(--color-brand);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.9);
+}
+
+.choice-pill:active .choice-pill__arrow,
+.choice-pill--pressed .choice-pill__arrow {
+  color: #ffffff;
+}
+
+/* On phones the two answers stack as full-width buttons. */
+@media (max-width: 480px) {
+  .home__choices {
+    flex-direction: column;
+    width: min(340px, 100%);
+  }
 }
 
 .code-input {
