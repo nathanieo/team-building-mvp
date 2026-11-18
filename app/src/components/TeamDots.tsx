@@ -51,7 +51,7 @@ function makeDot(): Dot {
  * close together, like people forming teams. Purely decorative; it sits behind
  * the page content and stays still for people who prefer reduced motion.
  */
-export function TeamDots(): ReactElement {
+export function TeamDots({ contained = false }: { contained?: boolean } = {}): ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // A layout effect draws the first frame before the browser paints, so the
@@ -70,8 +70,10 @@ export function TeamDots(): ReactElement {
     function resize(): void {
       if (!canvas || !context) return;
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
-      width = window.innerWidth;
-      height = window.innerHeight;
+      // Full screen by default; a contained canvas fills its parent (e.g. the dashboard header).
+      const box = contained ? canvas.parentElement?.getBoundingClientRect() : undefined;
+      width = box ? Math.max(1, box.width) : window.innerWidth;
+      height = box ? Math.max(1, box.height) : window.innerHeight;
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -137,13 +139,19 @@ export function TeamDots(): ReactElement {
     resize();
     draw();
     window.addEventListener("resize", handleResize);
+    const parentObserver =
+      contained && canvas.parentElement && typeof ResizeObserver === "function"
+        ? new ResizeObserver(handleResize)
+        : undefined;
+    if (parentObserver && canvas.parentElement) parentObserver.observe(canvas.parentElement);
     if (!reduceMotion) frame = window.requestAnimationFrame(tick);
 
     return () => {
       window.cancelAnimationFrame(frame);
       window.removeEventListener("resize", handleResize);
+      parentObserver?.disconnect();
     };
-  }, []);
+  }, [contained]);
 
-  return <canvas ref={canvasRef} className="team-dots" aria-hidden="true" />;
+  return <canvas ref={canvasRef} className={`team-dots${contained ? " team-dots--contained" : ""}`} aria-hidden="true" />;
 }

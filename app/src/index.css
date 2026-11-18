@@ -733,78 +733,148 @@ select {
 
 /* ---------- Dashboard ---------- */
 
-.topbar {
+/* Green header band (with drifting dots) holding the logo, greeting and New class. */
+.dash-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 0 clamp(16px, 4vw, 40px) 92px;
+  color: #ffffff;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.12), transparent 22rem),
+    linear-gradient(160deg, var(--color-brand) 0%, var(--color-brand-dark) 100%);
+}
+
+.dash-hero > :not(.team-dots) {
+  position: relative;
+  z-index: 1;
+}
+
+.dash-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  min-height: 64px;
-  padding: 0 clamp(16px, 4vw, 40px);
-  border-bottom: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(8px);
+  max-width: 1120px;
+  min-height: 72px;
+  margin: 0 auto;
 }
 
-.topbar__brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--color-heading);
-  font-weight: 750;
+.dash-bar__brand {
+  font-size: 1.05rem;
 }
 
-.topbar__account {
+.dash-bar__account {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.topbar__name {
-  color: var(--color-text-muted);
-  font-size: 0.92rem;
+.dash-bar__name {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.9rem;
+}
+
+.dash-bar__logout {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.85rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.dash-bar__logout:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.dash-hero__intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1120px;
+  margin: clamp(20px, 5vw, 40px) auto 0;
+}
+
+.dash-hero__intro h1 {
+  color: #ffffff;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  animation: door-in 480ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.dash-new-class {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--color-brand-dark);
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(9, 32, 26, 0.18);
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms ease;
+}
+
+.dash-new-class span {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.dash-new-class:hover {
+  transform: translateY(-2px);
 }
 
 .dashboard__main {
+  position: relative;
+  z-index: 1;
   display: grid;
-  gap: 28px;
+  gap: 32px;
   width: min(1120px, calc(100% - 32px));
-  margin: 0 auto;
-  padding: 36px 0 64px;
+  margin: -56px auto 0;
+  padding-bottom: 64px;
 }
 
-.dashboard__intro {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.stat-row {
+/* The four totals in one white strip that overlaps the bottom of the green band. */
+.stat-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  border-radius: 18px;
+  background: var(--color-surface);
+  box-shadow: 0 18px 50px rgba(9, 32, 26, 0.14);
 }
 
 .stat {
   display: grid;
-  gap: 4px;
+  gap: 6px;
   align-content: start;
-  padding: 18px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-surface);
+  padding: 20px 22px;
+}
+
+.stat + .stat {
+  border-left: 1px solid var(--color-border);
 }
 
 .stat__label {
   color: var(--color-text-muted);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
 }
 
 .stat__value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
   color: var(--color-heading);
-  font-size: 1.75rem;
+  font-size: 1.9rem;
   font-weight: 750;
   font-variant-numeric: tabular-nums;
 }
@@ -812,11 +882,27 @@ select {
 .stat__sub {
   color: var(--color-text-muted);
   font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 @media (max-width: 760px) {
-  .stat-row {
+  .stat-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stat:nth-child(3) {
+    border-left: 0;
+  }
+
+  .stat:nth-child(n + 3) {
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+@media (max-width: 560px) {
+  .dash-bar__name {
+    display: none;
   }
 }
 
@@ -826,18 +912,23 @@ select {
 
 .class-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+  gap: 18px;
 }
 
 .class-card {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  border-radius: 18px;
   background: var(--color-surface);
-  box-shadow: var(--shadow);
+  box-shadow: 0 1px 2px rgba(21, 43, 38, 0.06), 0 10px 30px rgba(21, 43, 38, 0.08);
   overflow: hidden;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.class-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 1px 2px rgba(21, 43, 38, 0.06), 0 16px 40px rgba(21, 43, 38, 0.12);
 }
 
 .class-card--new {
@@ -851,7 +942,7 @@ select {
 }
 
 .class-card--skeleton {
-  min-height: 230px;
+  min-height: 250px;
   background: linear-gradient(90deg, #eef3f1 0%, #f7faf9 50%, #eef3f1 100%);
   background-size: 200% 100%;
   animation: shimmer 1.4s linear infinite;
@@ -868,7 +959,7 @@ select {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 18px 18px 0;
+  padding: 20px 20px 0;
 }
 
 .class-card__meta {
@@ -880,7 +971,7 @@ select {
 .class-card__body {
   display: grid;
   gap: 16px;
-  padding: 16px 18px 18px;
+  padding: 16px 20px 20px;
 }
 
 .status-pill {
@@ -907,28 +998,39 @@ select {
   background: var(--color-brand-dark);
 }
 
+/* Join code in a mint tile so it stands out as the thing to share. */
 .join-code {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  border-radius: var(--radius-small);
-  background: #f2f6f4;
+  padding: 10px 10px 10px 14px;
+  border-radius: 12px;
+  background: var(--color-brand-soft);
 }
 
 .join-code__label {
-  color: var(--color-text-muted);
+  color: var(--color-brand-dark);
   font-size: 0.82rem;
   font-weight: 600;
+  opacity: 0.8;
 }
 
 .join-code__value {
   flex: 1;
-  color: var(--color-heading);
+  color: var(--color-brand-dark);
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
   font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: 0.18em;
+}
+
+.join-code .button {
+  border-color: transparent;
+  background: var(--color-surface);
+}
+
+.join-code .button:hover {
+  background: #f5f8f6;
 }
 
 .progress-block {
@@ -958,7 +1060,7 @@ select {
 .progress-bar__fill {
   height: 100%;
   border-radius: inherit;
-  background: var(--color-brand);
+  background: linear-gradient(90deg, #4f9c86 0%, var(--color-brand) 100%);
   transition: width 600ms ease;
 }
 
@@ -987,9 +1089,9 @@ select {
 .class-card__next {
   display: grid;
   gap: 2px;
-  padding: 12px 18px;
-  border-top: 1px solid var(--color-border);
-  background: #fafcfb;
+  padding: 14px 20px;
+  background: #f1f7f4;
+  color: var(--color-heading);
   font-size: 0.9rem;
 }
 
@@ -1004,31 +1106,44 @@ select {
 .empty-state {
   display: grid;
   gap: 12px;
-  justify-items: start;
-  padding: 32px;
-  border: 1px dashed #bfd1ca;
-  border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.6);
+  justify-items: center;
+  padding: 44px 24px;
+  border-radius: 18px;
+  background: var(--color-surface);
+  box-shadow: 0 1px 2px rgba(21, 43, 38, 0.06), 0 10px 30px rgba(21, 43, 38, 0.08);
+  text-align: center;
 }
 
 .empty-state p {
-  max-width: 56ch;
+  max-width: 48ch;
   color: var(--color-text-muted);
 }
 
 /* ---------- Dialog ---------- */
 
 .dialog {
-  width: min(460px, calc(100% - 32px));
-  padding: 24px;
+  width: min(440px, calc(100% - 32px));
+  padding: 28px;
   border: 0;
-  border-radius: var(--radius);
+  border-radius: 18px;
   color: var(--color-text);
-  box-shadow: 0 20px 60px rgba(21, 43, 38, 0.25);
+  box-shadow: 0 30px 80px rgba(9, 32, 26, 0.35);
+}
+
+.dialog[open] {
+  animation: dialog-in 260ms cubic-bezier(0.2, 0.8, 0.3, 1.1) both;
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
 }
 
 .dialog::backdrop {
-  background: rgba(21, 43, 38, 0.35);
+  background: rgba(14, 40, 33, 0.45);
+  backdrop-filter: blur(3px);
 }
 
 .dialog__header {
@@ -1059,6 +1174,12 @@ select {
   pointer-events: none;
   /* Its own transition layer: the dots stay put while the page content fades. */
   view-transition-name: team-dots;
+}
+
+/* Inside the dashboard header the dots fill just that band. */
+.team-dots--contained {
+  position: absolute;
+  view-transition-name: none;
 }
 
 .auth-layout > :not(.team-dots),

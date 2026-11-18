@@ -5,6 +5,7 @@ import { useAuth } from "../auth/useAuth";
 import { BrandLogo } from "../components/BrandLogo";
 import { ClassCard } from "../components/ClassCard";
 import { CreateClassDialog } from "../components/CreateClassDialog";
+import { TeamDots } from "../components/TeamDots";
 import { api, ApiError } from "../lib/api";
 import { summarizeCohorts } from "../lib/cohortProgress";
 
@@ -62,34 +63,34 @@ function DashboardPage({ facilitator }: { facilitator: Facilitator }): ReactElem
 
   return (
     <div className="dashboard">
-      <header className="topbar">
-        <div className="topbar__brand">
-          <BrandLogo className="brand-logo" size={32} />
-          Team Building
-        </div>
-        <div className="topbar__account">
-          <span className="topbar__name">{facilitator.displayName}</span>
-          <button type="button" className="button button--ghost button--small" onClick={() => void logout()}>
-            Log out
+      <section className="dash-hero">
+        <TeamDots contained />
+        <header className="dash-bar">
+          <div className="auth-brand dash-bar__brand">
+            <BrandLogo className="brand-logo" size={36} variant="frosted" />
+            Team Building
+          </div>
+          <div className="dash-bar__account">
+            <span className="dash-bar__name">{facilitator.displayName}</span>
+            <button type="button" className="dash-bar__logout" onClick={() => void logout()}>
+              Log out
+            </button>
+          </div>
+        </header>
+
+        <div className="dash-hero__intro">
+          <h1>
+            {greeting()}
+            {firstName ? `, ${firstName}` : ""}
+          </h1>
+          <button type="button" className="dash-new-class" onClick={() => setDialogOpen(true)}>
+            <span aria-hidden="true">+</span> New class
           </button>
         </div>
-      </header>
+      </section>
 
       <main className="dashboard__main">
-        <section className="dashboard__intro">
-          <div>
-            <p className="eyebrow">Facilitator dashboard</p>
-            <h1>
-              {greeting()}
-              {firstName ? `, ${firstName}` : ""}
-            </h1>
-          </div>
-          <button type="button" className="button button--primary" onClick={() => setDialogOpen(true)}>
-            + New class
-          </button>
-        </section>
-
-        <section className="stat-row" aria-label="Totals across your classes">
+        <section className="stat-strip" aria-label="Totals across your classes">
           <div className="stat">
             <span className="stat__label">Classes</span>
             <span className="stat__value">{totals.classCount}</span>
@@ -102,12 +103,12 @@ function DashboardPage({ facilitator }: { facilitator: Facilitator }): ReactElem
             <span className="stat__label">Questionnaires complete</span>
             <span className="stat__value">
               {totals.completionPercent === null ? "—" : `${totals.completionPercent}%`}
+              {totals.studentCount > 0 ? (
+                <span className="stat__sub">
+                  {totals.completedCount} of {totals.studentCount}
+                </span>
+              ) : null}
             </span>
-            {totals.studentCount > 0 ? (
-              <span className="stat__sub">
-                {totals.completedCount} of {totals.studentCount}
-              </span>
-            ) : null}
           </div>
           <div className="stat">
             <span className="stat__label">Teams formed</span>
@@ -139,10 +140,7 @@ function DashboardPage({ facilitator }: { facilitator: Facilitator }): ReactElem
           {load.status === "ready" && cohorts.length === 0 ? (
             <div className="empty-state">
               <h3>Create your first class</h3>
-              <p>
-                You'll get a join code to share with students. Once they finish the questionnaires, you can form
-                teams here.
-              </p>
+              <p>You'll get a join code to share with your students.</p>
               <button type="button" className="button button--primary" onClick={() => setDialogOpen(true)}>
                 + New class
               </button>
