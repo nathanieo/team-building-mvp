@@ -1,8 +1,8 @@
 import { randomInt } from "node:crypto";
-import { COHORT_LIMITS } from "@team-building-mvp/contracts";
+import { COHORT_LIMITS, JOIN_CODE_ALPHABET } from "@team-building-mvp/contracts";
 
-/** No 0/O, 1/I/L, so codes read cleanly off a projector slide. */
-export const JOIN_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+// The alphabet lives in contracts so the student code box accepts exactly these characters.
+export { JOIN_CODE_ALPHABET };
 
 export function generateJoinCode(length: number = COHORT_LIMITS.joinCodeLength): string {
   let code = "";

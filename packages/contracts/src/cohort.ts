@@ -10,6 +10,23 @@ export const COHORT_LIMITS = {
   joinCodeLength: 6,
 } as const;
 
+/** Join code characters. No 0/O, 1/I/L, so codes read cleanly off a projector slide. */
+export const JOIN_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+
+/** Uppercases and drops spaces and dashes, so "bd8 vef" and "BD8-VEF" both become "BD8VEF". */
+export function normalizeJoinCode(input: string): string {
+  return input.toUpperCase().replace(/[\s-]/g, "");
+}
+
+/** Checks a normalized join code's shape. Returns the message to show, if any. */
+export function joinCodeError(code: string): string | undefined {
+  if (!code) return "Enter the class code from your instructor.";
+  if (code.length !== COHORT_LIMITS.joinCodeLength || [...code].some((char) => !JOIN_CODE_ALPHABET.includes(char))) {
+    return `Class codes are ${COHORT_LIMITS.joinCodeLength} letters and numbers, like BD8VEF. They never use 0, 1, I, L or O.`;
+  }
+  return undefined;
+}
+
 /**
  * Where a class is in the MVP flow:
  * collecting → students are joining and answering questionnaires;

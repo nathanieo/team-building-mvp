@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   isEmailIdentifier,
+  joinCodeError,
+  normalizeJoinCode,
   validateCreateCohortRequest,
   validateLoginRequest,
   validateRegisterRequest,
@@ -77,6 +79,20 @@ describe("validateRegisterRequest", () => {
     for (const username of ["kim", "dr.kim", "kim_lee2", "k1m"]) {
       expect(validateRegisterRequest({ ...valid, username }).ok, username).toBe(true);
     }
+  });
+});
+
+describe("join codes", () => {
+  it("normalizes casing, spaces and dashes", () => {
+    expect(normalizeJoinCode(" bd8-vef ")).toBe("BD8VEF");
+    expect(normalizeJoinCode("bd8 vef")).toBe("BD8VEF");
+  });
+
+  it("accepts real codes and explains bad ones", () => {
+    expect(joinCodeError("BD8VEF")).toBeUndefined();
+    expect(joinCodeError("")).toMatch(/Enter the class code/);
+    expect(joinCodeError("BD8VE")).toMatch(/6 letters and numbers/);
+    expect(joinCodeError("BD8VE0")).toMatch(/never use 0/);
   });
 });
 

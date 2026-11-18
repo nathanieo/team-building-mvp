@@ -25,7 +25,14 @@ export type {
   RegisterField,
 } from "./auth.js";
 
-export { COHORT_LIMITS, COHORT_STATUSES, validateCreateCohortRequest } from "./cohort.js";
+export {
+  COHORT_LIMITS,
+  COHORT_STATUSES,
+  JOIN_CODE_ALPHABET,
+  joinCodeError,
+  normalizeJoinCode,
+  validateCreateCohortRequest,
+} from "./cohort.js";
 export type {
   CohortListResponse,
   CohortResponse,
