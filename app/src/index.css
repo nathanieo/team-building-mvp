@@ -1034,6 +1034,34 @@ select {
   padding-top: 4px;
 }
 
+/* ---------- Drifting team dots background ---------- */
+
+.team-dots {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* Its own transition layer: the dots stay put while the page content fades. */
+  view-transition-name: team-dots;
+}
+
+.auth-layout > :not(.team-dots),
+.home-page > :not(.team-dots) {
+  position: relative;
+  z-index: 1;
+}
+
+::view-transition-old(team-dots) {
+  animation: none;
+  opacity: 0;
+}
+
+::view-transition-new(team-dots) {
+  animation: none;
+}
+
 /* ---------- Page transitions ---------- */
 
 /* Old page fades back and blurs; the new one fades up into place. */

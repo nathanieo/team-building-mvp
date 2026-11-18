@@ -2,11 +2,13 @@ import type { ReactElement, ReactNode } from "react";
 import { Link } from "react-router";
 import { usePressNavigate } from "../lib/usePressNavigate";
 import { BrandLogo } from "./BrandLogo";
+import { TeamDots } from "./TeamDots";
 
 /** Shared frame for the log-in, sign-up and join pages: brand gradient, logo, white card. */
 export function AuthLayout({ children }: { children: ReactNode }): ReactElement {
   return (
     <div className="auth-layout">
+      <TeamDots />
       <main className="auth-layout__main">
         <div className="auth-brand">
           <BrandLogo className="brand-logo" size={44} variant="frosted" />

@@ -3,6 +3,7 @@ import type { CSSProperties, ReactElement } from "react";
 import { Link } from "react-router";
 import { useAuth } from "../auth/useAuth";
 import { BrandLogo } from "../components/BrandLogo";
+import { TeamDots } from "../components/TeamDots";
 import { usePressNavigate } from "../lib/usePressNavigate";
 
 /** Each word pops in one after another, then the answer buttons follow. */
@@ -43,6 +44,7 @@ function HomePage(): ReactElement {
 
   return (
     <div className="home-page">
+      <TeamDots />
       <header className="home-page__bar">
         <div className="auth-brand">
           <BrandLogo className="brand-logo" size={44} variant="frosted" />
