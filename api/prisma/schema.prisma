@@ -1,0 +1,99 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// A teacher or researcher who runs classes through the app.
+model Facilitator {
+  id           String               @id @default(uuid()) @db.Uuid
+  email        String               @unique @db.Text
+  displayName  String               @db.Text
+  /// scrypt hash in the form scrypt$N$r$p$salt$hash. Never returned by the API.
+  passwordHash String               @db.Text
+  createdAt    DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime             @updatedAt @db.Timestamptz(3)
+  sessions     FacilitatorSession[]
+  cohorts      Cohort[]
+
+  @@map("facilitators")
+}
+
+/// Server-side login session. Only a SHA-256 hash of the cookie token is stored.
+model FacilitatorSession {
+  id            String      @id @default(uuid()) @db.Uuid
+  tokenHash     String      @unique @db.Text
+  facilitatorId String      @db.Uuid
+  facilitator   Facilitator @relation(fields: [facilitatorId], references: [id], onDelete: Cascade)
+  expiresAt     DateTime    @db.Timestamptz(3)
+  createdAt     DateTime    @default(now()) @db.Timestamptz(3)
+
+  @@index([facilitatorId])
+  @@index([expiresAt])
+  @@map("facilitator_sessions")
+}
+
+/// One class (cohort) that students join with a code and get placed into teams.
+model Cohort {
+  id            String      @id @default(uuid()) @db.Uuid
+  facilitatorId String      @db.Uuid
+  facilitator   Facilitator @relation(fields: [facilitatorId], references: [id], onDelete: Cascade)
+  name          String      @db.Text
+  term          String?     @db.Text
+  joinCode      String      @unique @db.Text
+  teamSize      Int
+  /// collecting | teams-draft | teams-locked
+  status        String      @default("collecting") @db.Text
+  createdAt     DateTime    @default(now()) @db.Timestamptz(3)
+  students      Student[]
+  projects      Project[]
+  teams         Team[]
+
+  @@index([facilitatorId, createdAt])
+  @@map("cohorts")
+}
+
+/// A student who joined a class. Questionnaire answers are added in the next MVP step.
+model Student {
+  id          String    @id @default(uuid()) @db.Uuid
+  cohortId    String    @db.Uuid
+  cohort      Cohort    @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  displayName String    @db.Text
+  email       String    @db.Text
+  joinedAt    DateTime  @default(now()) @db.Timestamptz(3)
+  /// Set once every questionnaire is finished.
+  completedAt DateTime? @db.Timestamptz(3)
+
+  @@unique([cohortId, email])
+  @@map("students")
+}
+
+/// A project that teams in a class will work on.
+model Project {
+  id          String   @id @default(uuid()) @db.Uuid
+  cohortId    String   @db.Uuid
+  cohort      Cohort   @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  title       String   @db.Text
+  description String   @db.Text
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([cohortId])
+  @@map("projects")
+}
+
+/// A formed team. Membership is added with the team-forming step.
+model Team {
+  id        String   @id @default(uuid()) @db.Uuid
+  cohortId  String   @db.Uuid
+  cohort    Cohort   @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  name      String   @db.Text
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([cohortId])
+  @@map("teams")
+}

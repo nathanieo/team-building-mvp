@@ -1,0 +1,46 @@
+{
+  "name": "team-building-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MVP for transparent class team formation: facilitator login and dashboard first.",
+  "workspaces": [
+    "app",
+    "api",
+    "packages/contracts"
+  ],
+  "engines": {
+    "node": ">=24.20.0 <25",
+    "npm": ">=11.19.0 <12"
+  },
+  "packageManager": "npm@11.19.0",
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose stop",
+    "db:generate": "npm run db:generate --workspace=@team-building-mvp/api",
+    "db:migrate": "npm run db:migrate --workspace=@team-building-mvp/api",
+    "db:migrate:dev": "npm run db:migrate:dev --workspace=@team-building-mvp/api --",
+    "dev:api": "npm run start:dev --workspace=@team-building-mvp/api",
+    "dev:frontend": "npm run dev --workspace=app",
+    "predev:api": "npm run build --workspace=@team-building-mvp/contracts",
+    "predev:frontend": "npm run build --workspace=@team-building-mvp/contracts",
+    "pretest": "npm run build --workspace=@team-building-mvp/contracts",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "build": "npm run build --workspace=@team-building-mvp/contracts && npm run build --workspace=app && npm run build --workspace=@team-building-mvp/api",
+    "check": "npm run test && npm run lint && npm run build"
+  },
+  "overrides": {
+    "@nestjs/common": "11.2.8",
+    "@nestjs/platform-express@11.2.8": {
+      "multer": "2.5.0"
+    },
+    "prisma": "7.10.1"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "fsevents": false,
+    "@prisma/engines@7.10.1": true,
+    "prisma@7.10.1": true
+  }
+}

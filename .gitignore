@@ -1,0 +1,20 @@
+# npm installs workspace dependencies here.
+node_modules/
+
+# macOS Finder metadata.
+.DS_Store
+
+# Build output.
+app/dist/
+api/dist/
+api/coverage/
+packages/contracts/dist/
+
+# Private runtime configuration and the generated Prisma client.
+.env
+.env.*
+!.env.example
+api/.env
+api/.env.*
+!api/.env.example
+api/src/generated/

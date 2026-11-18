@@ -1,0 +1,50 @@
+{
+  "name": "@team-building-mvp/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NestJS API for the Team Building MVP.",
+  "type": "module",
+  "engines": {
+    "node": ">=24.20.0 <25",
+    "npm": ">=11.19.0 <12"
+  },
+  "scripts": {
+    "build": "nest build",
+    "start:dev": "node --env-file-if-exists=.env ../node_modules/@nestjs/cli/bin/nest.js start --watch",
+    "start:prod": "node --env-file-if-exists=.env dist/main.js",
+    "lint": "oxlint src test --ignore-pattern \"src/generated/**\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prebuild": "npm run db:generate",
+    "pretest": "npm --prefix ../packages/contracts run build && npm run db:generate",
+    "prestart:dev": "npm run db:generate",
+    "db:generate": "prisma generate --config prisma7.config.ts",
+    "db:migrate": "node --env-file-if-exists=.env ../node_modules/prisma/build/index.js migrate deploy --config prisma7.config.ts",
+    "db:migrate:dev": "node --env-file-if-exists=.env ../node_modules/prisma/build/index.js migrate dev --config prisma7.config.ts"
+  },
+  "dependencies": {
+    "@nestjs/common": "11.2.8",
+    "@nestjs/core": "11.2.8",
+    "@nestjs/platform-express": "11.2.8",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "@team-building-mvp/contracts": "0.1.0",
+    "pg": "8.23.0",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "11.0.24",
+    "@nestjs/schematics": "11.1.0",
+    "@nestjs/testing": "11.2.8",
+    "@types/express": "5.0.6",
+    "@types/node": "24.13.2",
+    "oxlint": "1.71.0",
+    "prisma": "7.10.1",
+    "ts-loader": "9.6.2",
+    "ts-node": "10.9.2",
+    "tsconfig-paths": "4.2.0",
+    "typescript": "5.9.3",
+    "vitest": "4.1.12"
+  }
+}
