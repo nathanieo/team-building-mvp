@@ -260,6 +260,11 @@ select {
   background: var(--color-error-soft);
 }
 
+.alert--info {
+  color: var(--color-brand-dark);
+  background: var(--color-brand-soft);
+}
+
 /* ---------- Login ---------- */
 
 /* One centered column on the brand gradient (the same one the intro uses, so it fades straight in). */
@@ -311,28 +316,94 @@ select {
   box-shadow: 0 24px 60px rgba(9, 32, 26, 0.28);
 }
 
-.segmented {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  padding: 4px;
-  border-radius: 10px;
-  background: #e8efec;
-}
-
-.segmented__option {
-  min-height: 38px;
-  border: 0;
-  border-radius: 7px;
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   color: var(--color-text-muted);
-  background: transparent;
-  font-weight: 650;
-  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
-.segmented__option[aria-selected="true"] {
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.social-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+/* On phones the three buttons stack instead of wrapping two-plus-one. */
+@media (max-width: 420px) {
+  .social-buttons {
+    grid-template-columns: 1fr;
+  }
+}
+
+.social-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
   color: var(--color-heading);
   background: var(--color-surface);
-  box-shadow: 0 1px 2px rgba(21, 43, 38, 0.12);
+  font-size: 0.9rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.social-button:hover {
+  border-color: #c3d3cc;
+  background: #f5f8f6;
+}
+
+.social-button svg {
+  flex: none;
+}
+
+/* "Not with us? Join Team Building": the highlighted words flip to white-on-green when clicked. */
+.auth-switch {
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+.auth-switch__link {
+  color: var(--color-heading);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.auth-switch__highlight {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--color-brand);
+  background: var(--color-brand-soft);
+  font-weight: 750;
+  transition: color 180ms ease, background-color 180ms ease;
+}
+
+.auth-switch__link:hover .auth-switch__highlight {
+  background: #c9e4da;
+}
+
+.auth-switch__link:active .auth-switch__highlight,
+.auth-switch__highlight--pressed,
+.auth-switch__link:hover .auth-switch__highlight--pressed {
+  color: #ffffff;
+  background: var(--color-brand);
 }
 
 /* Animated "how it works" tree that plays over the login page once per tab. */

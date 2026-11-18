@@ -1,36 +1,39 @@
 import { useState } from "react";
 import type { FormEvent, ReactElement } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router";
-import { AUTH_LIMITS, validateLoginRequest, validateRegisterRequest } from "@team-building-mvp/contracts";
+import { validateLoginRequest } from "@team-building-mvp/contracts";
 import { useAuth } from "../auth/useAuth";
-import { BrandLogo } from "../components/BrandLogo";
+import { AuthLayout, AuthSwitch } from "../components/AuthLayout";
 import { LoginIntro } from "../components/LoginIntro";
+import { AppleIcon, GoogleIcon, MicrosoftIcon } from "../components/SocialIcons";
 import { TextField } from "../components/TextField";
 import { ApiError } from "../lib/api";
 
-type Mode = "login" | "register";
-
 interface FormValues {
-  displayName: string;
   email: string;
   password: string;
-  inviteCode: string;
 }
 
-const EMPTY: FormValues = { displayName: "", email: "", password: "", inviteCode: "" };
+const EMPTY: FormValues = { email: "", password: "" };
+
+const PROVIDERS = [
+  { name: "Google", Icon: GoogleIcon },
+  { name: "Apple", Icon: AppleIcon },
+  { name: "Microsoft", Icon: MicrosoftIcon },
+] as const;
 
 /**
- * Facilitator log-in page with a "create account" tab.
+ * Facilitator log-in page. New facilitators sign up from the link at the bottom.
  * Validation uses the same shared rules as the API, so errors match exactly.
  */
 function LoginPage(): ReactElement {
-  const { state, login, register } = useAuth();
+  const { state, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [mode, setMode] = useState<Mode>("login");
   const [values, setValues] = useState<FormValues>(EMPTY);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -52,19 +55,12 @@ function LoginPage(): ReactElement {
     }
   }
 
-  function switchMode(next: Mode): void {
-    setMode(next);
-    setFieldErrors({});
-    setFormError(null);
-  }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     setFormError(null);
+    setNotice(null);
 
-    const loginCheck = validateLoginRequest(values);
-    const registerCheck = validateRegisterRequest(values);
-    const check = mode === "login" ? loginCheck : registerCheck;
+    const check = validateLoginRequest(values);
     if (!check.ok) {
       setFieldErrors(check.errors as Record<string, string>);
       return;
@@ -72,8 +68,7 @@ function LoginPage(): ReactElement {
 
     setSubmitting(true);
     try {
-      if (mode === "login" && loginCheck.ok) await login(loginCheck.value);
-      if (mode === "register" && registerCheck.ok) await register(registerCheck.value);
+      await login(check.value);
       navigate(destination, { replace: true });
     } catch (error) {
       if (error instanceof ApiError) {
@@ -87,109 +82,84 @@ function LoginPage(): ReactElement {
     }
   }
 
-  const isLogin = mode === "login";
+  // Placeholder until single sign-on is connected to the API.
+  function handleProvider(provider: string): void {
+    setFormError(null);
+    setNotice(`Signing in with ${provider} isn't available yet. Use your email and password for now.`);
+  }
 
   return (
-    <div className="auth-layout">
+    <>
       <LoginIntro />
-      <main className="auth-layout__main">
-        <div className="auth-brand">
-          <BrandLogo className="brand-logo" size={44} variant="frosted" />
-          Team Building
-        </div>
+      <AuthLayout>
+        <h1>Log in</h1>
 
-        <div className="auth-card">
-          <h1>{isLogin ? "Log in" : "Create your account"}</h1>
-
-          <div className="segmented" role="tablist" aria-label="Account">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={isLogin}
-              className="segmented__option"
-              onClick={() => switchMode("login")}
-            >
-              Log in
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={!isLogin}
-              className="segmented__option"
-              onClick={() => switchMode("register")}
-            >
-              Create account
-            </button>
+        {formError ? (
+          <div className="alert alert--error" role="alert">
+            {formError}
           </div>
+        ) : null}
 
-          {formError ? (
-            <div className="alert alert--error" role="alert">
-              {formError}
-            </div>
-          ) : null}
+        <form className="stack" noValidate onSubmit={(event) => void handleSubmit(event)}>
+          <TextField
+            label="School email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            value={values.email}
+            error={fieldErrors.email}
+            onChange={(event) => update("email", event.target.value)}
+          />
 
-          <form className="stack" noValidate onSubmit={(event) => void handleSubmit(event)}>
-            {!isLogin ? (
-              <TextField
-                label="Your name"
-                name="displayName"
-                autoComplete="name"
-                value={values.displayName}
-                error={fieldErrors.displayName}
-                onChange={(event) => update("displayName", event.target.value)}
-              />
-            ) : null}
+          <TextField
+            label="Password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            value={values.password}
+            error={fieldErrors.password}
+            onChange={(event) => update("password", event.target.value)}
+            trailing={
+              <button
+                type="button"
+                className="field__toggle"
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword((shown) => !shown)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            }
+          />
 
-            <TextField
-              label="School email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              inputMode="email"
-              value={values.email}
-              error={fieldErrors.email}
-              onChange={(event) => update("email", event.target.value)}
-            />
+          <button className="button button--primary button--block" type="submit" disabled={submitting}>
+            {submitting ? "Logging in…" : "Log in"}
+          </button>
+        </form>
 
-            <TextField
-              label="Password"
-              name="password"
-              type={showPassword ? "text" : "password"}
-              autoComplete={isLogin ? "current-password" : "new-password"}
-              value={values.password}
-              error={fieldErrors.password}
-              hint={isLogin ? undefined : `At least ${AUTH_LIMITS.passwordMinimumLength} characters.`}
-              onChange={(event) => update("password", event.target.value)}
-              trailing={
-                <button
-                  type="button"
-                  className="field__toggle"
-                  aria-pressed={showPassword}
-                  onClick={() => setShowPassword((shown) => !shown)}
-                >
-                  {showPassword ? "Hide" : "Show"}
-                </button>
-              }
-            />
+        <div className="auth-divider">or</div>
 
-            {!isLogin ? (
-              <TextField
-                label="Invite code (if you were given one)"
-                name="inviteCode"
-                autoComplete="off"
-                value={values.inviteCode}
-                error={fieldErrors.inviteCode}
-                onChange={(event) => update("inviteCode", event.target.value)}
-              />
-            ) : null}
-
-            <button className="button button--primary button--block" type="submit" disabled={submitting}>
-              {submitting ? (isLogin ? "Logging in…" : "Creating account…") : isLogin ? "Log in" : "Create account"}
+        <div className="social-buttons">
+          {PROVIDERS.map(({ name, Icon }) => (
+            <button key={name} type="button" className="social-button" onClick={() => handleProvider(name)}>
+              <Icon />
+              <span>
+                <span className="visually-hidden">Continue with </span>
+                {name}
+              </span>
             </button>
-          </form>
+          ))}
         </div>
-      </main>
-    </div>
+
+        {notice ? (
+          <div className="alert alert--info" role="status">
+            {notice}
+          </div>
+        ) : null}
+
+        <AuthSwitch prompt="Not with us?" lead="Join" highlight="Team Building" to="/signup" />
+      </AuthLayout>
+    </>
   );
 }
 

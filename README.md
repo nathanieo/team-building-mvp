@@ -11,7 +11,7 @@ An MVP for forming fair, explainable student teams in a class. It uses the same 
 
 **Step 1: Facilitator login and dashboard**
 
-- `/login` lets facilitators log in or create an account. Passwords are hashed with scrypt, sessions use an HttpOnly cookie that is stored hashed in Postgres, and repeated failed logins are rate-limited.
+- `/login` lets facilitators log in, and `/signup` (linked from "Join Team Building") creates an account. Passwords are hashed with scrypt, sessions use an HttpOnly cookie that is stored hashed in Postgres, and repeated failed logins are rate-limited. The Google, Apple and Microsoft buttons are placeholders until single sign-on is connected.
 - `/dashboard` shows totals across classes (classes, students joined, questionnaire completion, teams formed) and one card per class with its join code, progress bar and next step.
 - **New class** creates a class with a name, term and team size, and generates a 6-character join code without look-alike characters (no 0/O, 1/I/L).
 
