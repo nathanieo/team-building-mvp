@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactElement } from "react";
-import { COHORT_LIMITS, validateCreateCohortRequest } from "@team-building-mvp/contracts";
+import { parseTeamSize, validateCreateCohortRequest } from "@team-building-mvp/contracts";
 import type { CohortSummary } from "@team-building-mvp/contracts";
 import { api, ApiError } from "../lib/api";
 import { TextField } from "./TextField";
@@ -12,17 +12,13 @@ interface CreateClassDialogProps {
   onUnauthorized: () => void;
 }
 
-const TEAM_SIZES = Array.from(
-  { length: COHORT_LIMITS.teamSizeMaximum - COHORT_LIMITS.teamSizeMinimum + 1 },
-  (_, index) => COHORT_LIMITS.teamSizeMinimum + index,
-);
-
 /** Native <dialog> gives focus trapping and Escape-to-close for free. */
 export function CreateClassDialog({ open, onClose, onCreated, onUnauthorized }: CreateClassDialogProps): ReactElement {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [name, setName] = useState("");
   const [term, setTerm] = useState("");
-  const [teamSize, setTeamSize] = useState(4);
+  /** What the teacher typed: "4" for a fixed size, or a range like "3-4". */
+  const [teamSize, setTeamSize] = useState("4");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -33,7 +29,7 @@ export function CreateClassDialog({ open, onClose, onCreated, onUnauthorized }: 
     if (open && !dialog.open) {
       setName("");
       setTerm("");
-      setTeamSize(4);
+      setTeamSize("4");
       setFieldErrors({});
       setFormError(null);
       dialog.showModal();
@@ -43,9 +39,17 @@ export function CreateClassDialog({ open, onClose, onCreated, onUnauthorized }: 
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
-    const validation = validateCreateCohortRequest({ name, term, teamSize });
-    if (!validation.ok) {
-      setFieldErrors(validation.errors as Record<string, string>);
+    const size = parseTeamSize(teamSize);
+    const validation = validateCreateCohortRequest({
+      name,
+      term,
+      teamSize: size.ok ? size.teamSize : undefined,
+      teamSizeMax: size.ok ? size.teamSizeMax : undefined,
+    });
+    if (!size.ok || !validation.ok) {
+      const errors = validation.ok ? {} : (validation.errors as Record<string, string>);
+      // The typed-size message is clearer than the generic number-range one.
+      setFieldErrors(size.ok ? errors : { ...errors, teamSize: size.error });
       return;
     }
     setSubmitting(true);
@@ -99,21 +103,15 @@ export function CreateClassDialog({ open, onClose, onCreated, onUnauthorized }: 
           onChange={(event) => setTerm(event.target.value)}
         />
 
-        <div className={`field${fieldErrors.teamSize ? " field--invalid" : ""}`}>
-          <label className="field__label" htmlFor="team-size">
-            Students per team
-          </label>
-          <div className="field__control">
-            <select id="team-size" value={teamSize} onChange={(event) => setTeamSize(Number(event.target.value))}>
-              {TEAM_SIZES.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </div>
-          {fieldErrors.teamSize ? <p className="field__error">{fieldErrors.teamSize}</p> : null}
-        </div>
+        <TextField
+          label="Students per team"
+          placeholder="4, or a range like 3-4"
+          inputMode="text"
+          autoComplete="off"
+          value={teamSize}
+          error={fieldErrors.teamSize}
+          onChange={(event) => setTeamSize(event.target.value)}
+        />
 
         <footer className="dialog__actions">
           <button type="button" className="button button--ghost" onClick={onClose}>

@@ -48,7 +48,10 @@ model Cohort {
   name          String      @db.Text
   term          String?     @db.Text
   joinCode      String      @unique @db.Text
+  /// Smallest team size.
   teamSize      Int
+  /// Largest team size; equal to teamSize for a fixed size.
+  teamSizeMax   Int
   /// collecting | teams-draft | teams-locked
   status        String      @default("collecting") @db.Text
   createdAt     DateTime    @default(now()) @db.Timestamptz(3)

@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   emailError,
+  formatTeamSize,
   isEmailIdentifier,
   joinCodeError,
   normalizeJoinCode,
+  parseClassList,
+  parseTeamSize,
   validateCreateCohortRequest,
   validateLoginRequest,
   validateRegisterRequest,
@@ -105,12 +108,53 @@ describe("join codes", () => {
   });
 });
 
+describe("parseTeamSize", () => {
+  it("reads a fixed size or a range in any order and spelling", () => {
+    expect(parseTeamSize("4")).toEqual({ ok: true, teamSize: 4, teamSizeMax: 4 });
+    expect(parseTeamSize("2-3")).toEqual({ ok: true, teamSize: 2, teamSizeMax: 3 });
+    expect(parseTeamSize("4-3")).toEqual({ ok: true, teamSize: 3, teamSizeMax: 4 });
+    expect(parseTeamSize(" 3 – 5 ")).toEqual({ ok: true, teamSize: 3, teamSizeMax: 5 });
+    expect(parseTeamSize("3 to 4")).toEqual({ ok: true, teamSize: 3, teamSizeMax: 4 });
+  });
+
+  it("explains sizes it can't use", () => {
+    expect(parseTeamSize("")).toMatchObject({ ok: false });
+    expect(parseTeamSize("four")).toMatchObject({ ok: false });
+    expect(parseTeamSize("1-3")).toMatchObject({ ok: false, error: expect.stringMatching(/2 to 12/) });
+    expect(parseTeamSize("10-14")).toMatchObject({ ok: false });
+  });
+
+  it("formats sizes for display", () => {
+    expect(formatTeamSize(4, 4)).toBe("4");
+    expect(formatTeamSize(3, 4)).toBe("3–4");
+  });
+});
+
+describe("parseClassList", () => {
+  it("reads emails pasted in lines, commas or semicolons, lowercased and de-duplicated", () => {
+    expect(parseClassList("Ana@School.edu\nben@school.edu, cara@school.edu;\n\n<dev@school.edu> ana@school.edu")).toEqual({
+      emails: ["ana@school.edu", "ben@school.edu", "cara@school.edu", "dev@school.edu"],
+      invalid: [],
+    });
+  });
+
+  it("reports anything that isn't an email", () => {
+    expect(parseClassList("ana@school.edu, Ben Kim")).toEqual({ emails: ["ana@school.edu"], invalid: ["Ben", "Kim"] });
+  });
+});
+
 describe("validateCreateCohortRequest", () => {
   it("accepts a class with an optional term", () => {
     expect(validateCreateCohortRequest({ name: "CS 665 Senior Design", teamSize: 4 })).toEqual({
       ok: true,
-      value: { name: "CS 665 Senior Design", term: null, teamSize: 4 },
+      value: { name: "CS 665 Senior Design", term: null, teamSize: 4, teamSizeMax: 4 },
     });
+  });
+
+  it("accepts a flexible range in either order", () => {
+    const result = validateCreateCohortRequest({ name: "CS 665", teamSize: 4, teamSizeMax: 3 });
+    expect(result.ok && result.value).toMatchObject({ teamSize: 3, teamSizeMax: 4 });
+    expect(validateCreateCohortRequest({ name: "CS 665", teamSize: 3, teamSizeMax: 13 }).ok).toBe(false);
   });
 
   it("rejects team sizes outside 2–12 and fractional sizes", () => {

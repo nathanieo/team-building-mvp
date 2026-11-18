@@ -10,6 +10,7 @@ function cohort(overrides: Partial<CohortSummary> = {}): CohortSummary {
     term: null,
     joinCode: "BD8VEF",
     teamSize: 4,
+    teamSizeMax: 4,
     status: "collecting",
     studentCount: 0,
     completedCount: 0,

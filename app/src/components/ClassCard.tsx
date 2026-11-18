@@ -1,15 +1,18 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
+import { formatTeamSize } from "@team-building-mvp/contracts";
 import type { CohortSummary } from "@team-building-mvp/contracts";
 import { describeNextStep, formatCreated, STATUS_LABELS } from "../lib/cohortProgress";
 
 interface ClassCardProps {
   cohort: CohortSummary;
   highlighted?: boolean;
+  /** Opens the class panel. The whole card is clickable; Copy still works on its own. */
+  onOpen: () => void;
 }
 
 /** One class on the dashboard: join code, questionnaire progress and next step. */
-export function ClassCard({ cohort, highlighted = false }: ClassCardProps): ReactElement {
+export function ClassCard({ cohort, highlighted = false, onOpen }: ClassCardProps): ReactElement {
   const [copied, setCopied] = useState(false);
   const percent = cohort.studentCount === 0 ? 0 : Math.round((cohort.completedCount / cohort.studentCount) * 100);
 
@@ -27,9 +30,13 @@ export function ClassCard({ cohort, highlighted = false }: ClassCardProps): Reac
     <article className={`class-card${highlighted ? " class-card--new" : ""}`} aria-labelledby={`class-${cohort.id}`}>
       <header className="class-card__header">
         <div>
-          <h3 id={`class-${cohort.id}`}>{cohort.name}</h3>
+          <h3 id={`class-${cohort.id}`}>
+            <button type="button" className="class-card__open" onClick={onOpen}>
+              {cohort.name}
+            </button>
+          </h3>
           <p className="class-card__meta">
-            {[cohort.term, `Teams of ${cohort.teamSize}`, formatCreated(cohort.createdAt)].filter(Boolean).join(" · ")}
+            {[cohort.term, `Teams of ${formatTeamSize(cohort.teamSize, cohort.teamSizeMax)}`, formatCreated(cohort.createdAt)].filter(Boolean).join(" · ")}
           </p>
         </div>
         <span className={`status-pill status-pill--${cohort.status}`}>{STATUS_LABELS[cohort.status]}</span>
@@ -66,22 +73,16 @@ export function ClassCard({ cohort, highlighted = false }: ClassCardProps): Reac
           </div>
         </div>
 
-        <dl className="class-card__counts">
-          <div>
-            <dt>Projects</dt>
-            <dd>{cohort.projectCount}</dd>
-          </div>
-          <div>
-            <dt>Teams</dt>
-            <dd>{cohort.teamCount}</dd>
-          </div>
-        </dl>
+        <p className="class-card__next">
+          <span className="class-card__next-arrow" aria-hidden="true">
+            →
+          </span>
+          <span>
+            <span className="visually-hidden">Next step: </span>
+            {describeNextStep(cohort)}
+          </span>
+        </p>
       </div>
-
-      <footer className="class-card__next">
-        <span className="class-card__next-label">Next step</span>
-        {describeNextStep(cohort)}
-      </footer>
     </article>
   );
 }

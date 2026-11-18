@@ -27,14 +27,21 @@ export type {
 } from "./auth.js";
 
 export {
+  CLASS_LIST_LIMITS,
   COHORT_LIMITS,
   COHORT_STATUSES,
+  formatTeamSize,
   JOIN_CODE_ALPHABET,
   joinCodeError,
   normalizeJoinCode,
+  parseClassList,
+  parseTeamSize,
   validateCreateCohortRequest,
 } from "./cohort.js";
 export type {
+  AddClassListRequest,
+  ClassStudent,
+  ClassStudentsResponse,
   CohortListResponse,
   CohortResponse,
   CohortStatus,

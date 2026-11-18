@@ -149,6 +149,15 @@ select {
   background: var(--color-brand-dark);
 }
 
+.button--danger {
+  color: #ffffff;
+  background: var(--color-error);
+}
+
+.button--danger:hover:not(:disabled) {
+  background: #8c3229;
+}
+
 .button--ghost {
   color: var(--color-brand-dark);
   background: transparent;
@@ -860,7 +869,7 @@ select {
 
 .class-card {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto 1fr;
   border-radius: 18px;
   background: var(--color-surface);
   box-shadow: 0 1px 2px rgba(21, 43, 38, 0.06), 0 10px 30px rgba(21, 43, 38, 0.08);
@@ -1006,43 +1015,19 @@ select {
   transition: width 600ms ease;
 }
 
-.class-card__counts {
-  display: flex;
-  gap: 28px;
-  margin: 0;
-}
-
-.class-card__counts div {
-  display: grid;
-  gap: 2px;
-}
-
-.class-card__counts dt {
-  color: var(--color-text-muted);
-  font-size: 0.8rem;
-}
-
-.class-card__counts dd {
-  margin: 0;
-  color: var(--color-heading);
-  font-weight: 700;
-}
-
+/* One light line saying what to do next, led by an arrow. */
 .class-card__next {
-  display: grid;
-  gap: 2px;
-  padding: 14px 20px;
-  background: #f1f7f4;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   color: var(--color-heading);
   font-size: 0.9rem;
 }
 
-.class-card__next-label {
+.class-card__next-arrow {
+  flex: none;
   color: var(--color-brand);
-  font-size: 0.72rem;
-  font-weight: 750;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: 700;
 }
 
 .empty-state {
@@ -1059,6 +1044,410 @@ select {
 .empty-state p {
   max-width: 48ch;
   color: var(--color-text-muted);
+}
+
+/* The class name button stretches over the whole card, so clicking anywhere opens the panel. */
+.class-card {
+  position: relative;
+  cursor: pointer;
+}
+
+.class-card__open {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.class-card__open::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.class-card__open:focus-visible {
+  outline: none;
+}
+
+.class-card:has(.class-card__open:focus-visible) {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Keeps the Copy button clickable above the stretched card button. */
+.class-card .join-code {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Class panel (slides out from the right) ---------- */
+
+.drawer {
+  width: min(520px, 100%);
+  max-width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  max-height: none;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 20px 0 0 20px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: -24px 0 60px rgba(9, 32, 26, 0.25);
+}
+
+.drawer[open] {
+  animation: drawer-in 340ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+.drawer::backdrop {
+  background: rgba(14, 40, 33, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+@media (max-width: 560px) {
+  .drawer {
+    border-radius: 0;
+  }
+}
+
+.drawer__inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.drawer__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 24px 24px 14px;
+}
+
+.drawer__meta {
+  margin-top: 6px;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+.drawer__code {
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: var(--color-brand-dark);
+  background: var(--color-brand-soft);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.drawer__close {
+  display: grid;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  color: var(--color-heading);
+  background: #f1f5f3;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.drawer__close:hover {
+  background: var(--color-brand-soft);
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tab {
+  position: relative;
+  padding: 12px 10px;
+  border: 0;
+  color: var(--color-text-muted);
+  background: none;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--color-heading);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--color-heading);
+}
+
+.tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  bottom: -1px;
+  left: 8px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--color-brand);
+}
+
+.drawer__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px 32px;
+}
+
+.drawer-empty {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  padding: 44px 12px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* Students tab */
+.student-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filter-chip__count {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+
+.filter-chip[aria-pressed="true"] {
+  border-color: var(--color-brand);
+  color: #ffffff;
+  background: var(--color-brand);
+}
+
+.filter-chip[aria-pressed="true"] .filter-chip__count {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.student-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.student-row {
+  display: grid;
+  gap: 10px;
+  padding: 12px 2px;
+  border-bottom: 1px solid #eef3f1;
+}
+
+.student-row__main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Small trash button; faint until hovered so the list stays calm. */
+.student-row__remove {
+  display: grid;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  background: transparent;
+  opacity: 0.55;
+  cursor: pointer;
+  transition: opacity 120ms ease, color 120ms ease, background-color 120ms ease;
+}
+
+.student-row:hover .student-row__remove,
+.student-row__remove:focus-visible {
+  opacity: 1;
+}
+
+.student-row__remove:hover {
+  color: var(--color-error);
+  background: var(--color-error-soft);
+}
+
+.student-row__remove:disabled {
+  opacity: 0;
+  cursor: default;
+}
+
+/* The row asking "Remove … from the class?" gets a faint red tint. */
+.student-row--confirming {
+  margin: 4px -10px;
+  padding: 12px;
+  border-bottom-color: transparent;
+  border-radius: 12px;
+  background: #fdf5f4;
+}
+
+.student-row__confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-left: 48px;
+  color: var(--color-heading);
+  font-size: 0.9rem;
+}
+
+.student-row__confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.student-row--skeleton {
+  height: 56px;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #eef3f1 0%, #f7faf9 50%, #eef3f1 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.student-row__avatar {
+  display: grid;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--color-brand-dark);
+  background: var(--color-brand-soft);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.student-row--missing .student-row__avatar {
+  color: var(--color-text-muted);
+  background: #eef1f0;
+}
+
+.student-row__text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.student-row__name,
+.student-row__sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.student-row__name {
+  color: var(--color-heading);
+  font-weight: 650;
+}
+
+.student-row__sub {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.join-status {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.join-status--joined {
+  color: var(--color-brand-dark);
+  background: var(--color-brand-soft);
+}
+
+.join-status--missing {
+  color: var(--color-text-muted);
+  background: #eef1f0;
+}
+
+.student-list__none {
+  padding: 24px 0;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.class-list-form {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #f5f8f6;
+}
+
+.class-list-form textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  color: var(--color-heading);
+  background: var(--color-surface);
+  font: inherit;
+  resize: vertical;
+}
+
+.class-list-form textarea:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px rgba(35, 107, 91, 0.15);
+}
+
+.class-list-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 /* ---------- Dialog ---------- */

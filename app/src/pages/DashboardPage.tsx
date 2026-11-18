@@ -4,6 +4,7 @@ import type { CohortSummary, Facilitator } from "@team-building-mvp/contracts";
 import { useAuth } from "../auth/useAuth";
 import { BrandLogo } from "../components/BrandLogo";
 import { ClassCard } from "../components/ClassCard";
+import { ClassPanel } from "../components/ClassPanel";
 import { CreateClassDialog } from "../components/CreateClassDialog";
 import { TeamDots } from "../components/TeamDots";
 import { api, ApiError } from "../lib/api";
@@ -26,6 +27,8 @@ function DashboardPage({ facilitator }: { facilitator: Facilitator }): ReactElem
   const [load, setLoad] = useState<LoadState>({ status: "loading" });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newestId, setNewestId] = useState<string | null>(null);
+  /** The class whose slide-out panel is open, if any. */
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const fetchCohorts = useCallback(async () => {
     setLoad({ status: "loading" });
@@ -57,6 +60,7 @@ function DashboardPage({ facilitator }: { facilitator: Facilitator }): ReactElem
   }
 
   const cohorts = load.status === "ready" ? load.cohorts : [];
+  const openCohort = cohorts.find((cohort) => cohort.id === openId) ?? null;
   const firstName = facilitator.displayName.split(" ").find((part) => !/^(dr|prof|mr|mrs|ms)\.?$/i.test(part));
 
   return (
@@ -122,12 +126,19 @@ function DashboardPage({ facilitator }: { facilitator: Facilitator }): ReactElem
           {load.status === "ready" && cohorts.length > 0 ? (
             <div className="class-grid">
               {cohorts.map((cohort) => (
-                <ClassCard key={cohort.id} cohort={cohort} highlighted={cohort.id === newestId} />
+                <ClassCard
+                  key={cohort.id}
+                  cohort={cohort}
+                  highlighted={cohort.id === newestId}
+                  onOpen={() => setOpenId(cohort.id)}
+                />
               ))}
             </div>
           ) : null}
         </section>
       </main>
+
+      <ClassPanel cohort={openCohort} onClose={() => setOpenId(null)} onUnauthorized={handleSessionExpired} />
 
       <CreateClassDialog
         open={dialogOpen}

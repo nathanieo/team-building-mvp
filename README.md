@@ -13,7 +13,7 @@ An MVP for forming fair, explainable student teams in a class. It uses the same 
 
 - `/` asks "Are you a student or a teacher?". Students go to `/join` to type their class code (checked against the join-code format; the join flow itself is the next roadmap step), and teachers go to log in, or to their dashboard if already signed in.
 - `/login` lets facilitators log in with a username or email, and `/signup` (linked from "Join Team Building") creates an account. "Forgot password?" opens `/forgot-password`, which collects an email but can't send reset emails yet (no email service or reset endpoint). Passwords are hashed with scrypt, sessions use an HttpOnly cookie that is stored hashed in Postgres, and repeated failed logins are rate-limited. The Google, Apple and Microsoft buttons are placeholders until single sign-on is connected.
-- `/dashboard` greets the facilitator in a green header with a "+ New class" button, then shows one card per class with its join code, questionnaire progress and next step.
+- `/dashboard` greets the facilitator in a green header with a "+ New class" button (team size can be fixed, e.g. 4, or a range like 3-4), then shows one card per class with its join code, questionnaire progress and a one-line next step. Clicking a card slides out a class panel with Students, Projects and Teams tabs. The Students tab lists the class list (joined / not joined, with a filter), lets the facilitator paste a class list and remove a student; it is built against API endpoints that do not exist yet (see the API table). Projects and Teams are placeholders.
 - **New class** creates a class with a name, term and team size, and generates a 6-character join code without look-alike characters (no 0/O, 1/I/L).
 
 ## MVP roadmap
@@ -73,8 +73,9 @@ All routes are under `/api`. Errors always look like `{ "error": string, "fieldE
 | POST | `/auth/logout` | cookie | Ends the session |
 | GET | `/auth/me` | cookie | Current facilitator |
 | GET | `/cohorts` | cookie | The facilitator's classes, with counts |
-| POST | `/cohorts` | cookie | `{ name, term, teamSize }` → new class with a join code |
+| POST | `/cohorts` | cookie | `{ name, term, teamSize, teamSizeMax? }` → new class with a join code. `teamSizeMax` defaults to `teamSize`; a range is stored smallest first |
 | GET | `/cohorts/:id` | cookie | One class (404 if it belongs to someone else) |
+| GET / POST / DELETE | `/cohorts/:id/students`, `/cohorts/:id/class-list`, `/cohorts/:id/students/:email` | cookie | **Not built yet.** Planned endpoints the Students tab calls: list students, add emails to the class list, remove a student. Need a class-list table |
 
 ## Configuration (`api/.env`)
 

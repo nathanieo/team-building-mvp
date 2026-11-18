@@ -1,5 +1,7 @@
 import type {
+  AddClassListRequest,
   ApiErrorResponse,
+  ClassStudentsResponse,
   CohortListResponse,
   CohortResponse,
   CreateCohortRequest,
@@ -67,4 +69,17 @@ export const api = {
   listCohorts: () => request<CohortListResponse>("/cohorts"),
   createCohort: (body: CreateCohortRequest) =>
     request<CohortResponse>("/cohorts", { method: "POST", body: JSON.stringify(body) }),
+  // The API doesn't have these three endpoints yet; the Students tab is built against them.
+  removeStudent: (cohortId: string, email: string) =>
+    request<ClassStudentsResponse>(
+      `/cohorts/${encodeURIComponent(cohortId)}/students/${encodeURIComponent(email)}`,
+      { method: "DELETE" },
+    ),
+  listStudents: (cohortId: string) =>
+    request<ClassStudentsResponse>(`/cohorts/${encodeURIComponent(cohortId)}/students`),
+  addClassList: (cohortId: string, body: AddClassListRequest) =>
+    request<ClassStudentsResponse>(`/cohorts/${encodeURIComponent(cohortId)}/class-list`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 };
