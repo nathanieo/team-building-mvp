@@ -1528,6 +1528,44 @@ select {
   animation: none;
 }
 
+/* ---------- Demo mode badge (development only) ---------- */
+
+.demo-badge {
+  position: fixed;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  left: 14px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 6px 12px;
+  border-radius: 999px;
+  color: var(--color-amber-text);
+  background: var(--color-amber-soft);
+  box-shadow: 0 6px 20px rgba(9, 32, 26, 0.18);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.demo-badge__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-focus);
+}
+
+.demo-badge__exit {
+  min-height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  color: #ffffff;
+  background: var(--color-amber-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 /* ---------- Page transitions ---------- */
 
 /* Old page fades back and blurs; the new one fades up into place. */

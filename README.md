@@ -45,6 +45,16 @@ npm run dev:frontend # Vite on http://localhost:5173
 
 Open http://localhost:5173. You'll land on the login page. Choose **Create account**, then create a class from the dashboard.
 
+## Demo mode (no API or database needed)
+
+While running the frontend dev server (`npm run dev:frontend`), open any page with `?demo`, for example
+http://localhost:5173/dashboard?demo. You're signed in as "Demo Teacher" with sample classes and students, and every
+API call is answered from built-in data in `app/src/lib/demoApi.ts` (changes reset on reload). It's remembered in that
+browser until you press **Exit** on the "Demo mode" badge or open a page with `?demo=off`.
+
+Demo mode exists only in development: every entry point checks `import.meta.env.DEV`, so production builds don't
+contain it.
+
 ## Scripts
 
 | Command | What it does |

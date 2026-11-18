@@ -9,6 +9,7 @@ import type {
   FacilitatorRegisterRequest,
   FacilitatorSessionResponse,
 } from "@team-building-mvp/contracts";
+import { isDemoMode } from "./demoFlag";
 
 /** A failed API call with the server's message and any field-level errors. */
 export class ApiError extends Error {
@@ -37,6 +38,15 @@ export function toApiError(status: number, body: unknown): ApiError {
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  // Demo mode (development only) answers from built-in sample data instead of the server.
+  // The DEV check lets production builds drop this branch and the demo module.
+  if (import.meta.env.DEV && isDemoMode()) {
+    const { demoRespond } = await import("./demoApi");
+    const { status, body } = await demoRespond(path, init);
+    if (status >= 400) throw toApiError(status, body);
+    return body as T;
+  }
+
   const headers = new Headers(init.headers);
   if (init.body !== undefined) headers.set("Content-Type", "application/json");
 
