@@ -353,12 +353,6 @@ select {
   color: var(--color-text-muted);
 }
 
-.auth-card__footnote {
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
-  text-align: center;
-}
-
 .segmented {
   display: grid;
   grid-template-columns: 1fr 1fr;

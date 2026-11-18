@@ -195,10 +195,6 @@ function LoginPage(): ReactElement {
               {submitting ? (isLogin ? "Logging in…" : "Creating account…") : isLogin ? "Log in" : "Create account"}
             </button>
           </form>
-
-          <p className="auth-card__footnote">
-            Students don't need an account. They join with the class code you share.
-          </p>
         </div>
       </main>
     </div>
