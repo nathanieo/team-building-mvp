@@ -1,9 +1,11 @@
 import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { timingSafeEqual } from "node:crypto";
+import { isEmailIdentifier } from "@team-building-mvp/contracts";
 import type {
   Facilitator,
   FacilitatorLoginRequest,
   FacilitatorRegisterRequest,
+  RegisterField,
 } from "@team-building-mvp/contracts";
 import { API_CONFIG } from "../config.js";
 import type { ApiConfig } from "../config.js";
@@ -20,11 +22,19 @@ export interface IssuedSession {
   maxAgeSeconds: number;
 }
 
-/** Same message for unknown email and wrong password so accounts can't be probed. */
-const INVALID_LOGIN = "That email and password don't match an account.";
+/** Same message for an unknown username/email and a wrong password so accounts can't be probed. */
+const INVALID_LOGIN = "Those details don't match an account. Check your username or email and password.";
 
-function toFacilitator(record: { id: string; email: string; displayName: string }): Facilitator {
-  return { id: record.id, email: record.email, displayName: record.displayName };
+const EMAIL_TAKEN = "An account with this email already exists. Log in instead.";
+const USERNAME_TAKEN = "That username is taken. Try another.";
+
+function toFacilitator(record: {
+  id: string;
+  email: string;
+  username: string | null;
+  displayName: string;
+}): Facilitator {
+  return { id: record.id, email: record.email, username: record.username, displayName: record.displayName };
 }
 
 function sameSecret(a: string, b: string): boolean {
@@ -64,25 +74,38 @@ export class AuthService {
       throw validationError({ inviteCode: "Enter the invite code from your administrator." });
     }
 
+    // Check first so the person learns which field is taken (and both if both are).
+    const existing = await this.prisma.facilitator.findMany({
+      where: { OR: [{ email: request.email }, { username: request.username }] },
+      select: { email: true, username: true },
+    });
+    const taken: Partial<Record<RegisterField, string>> = {};
+    if (existing.some((record) => record.email === request.email)) taken.email = EMAIL_TAKEN;
+    if (existing.some((record) => record.username === request.username)) taken.username = USERNAME_TAKEN;
+    if (Object.keys(taken).length > 0) throw validationError(taken);
+
     try {
       const record = await this.prisma.facilitator.create({
         data: {
           email: request.email,
+          username: request.username,
           displayName: request.displayName,
           passwordHash: await hashPassword(request.password),
         },
       });
       return this.issueSession(toFacilitator(record));
     } catch (error) {
+      // Two sign-ups racing for the same email or username between the check and the insert.
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        throw validationError({ email: "An account with this email already exists. Log in instead." });
+        const clash = JSON.stringify(error.meta ?? {});
+        throw validationError(clash.includes("username") ? { username: USERNAME_TAKEN } : { email: EMAIL_TAKEN });
       }
       throw error;
     }
   }
 
   async login(request: FacilitatorLoginRequest, clientKey: string): Promise<IssuedSession> {
-    const limitKey = `${request.email}|${clientKey}`;
+    const limitKey = `${request.identifier}|${clientKey}`;
     if (this.limiter.isBlocked(limitKey)) {
       throw apiError(
         HttpStatus.TOO_MANY_REQUESTS,
@@ -90,7 +113,9 @@ export class AuthService {
       );
     }
 
-    const record = await this.prisma.facilitator.findUnique({ where: { email: request.email } });
+    const record = await this.prisma.facilitator.findUnique({
+      where: isEmailIdentifier(request.identifier) ? { email: request.identifier } : { username: request.identifier },
+    });
     const passwordMatches = await verifyPassword(
       request.password,
       record?.passwordHash ?? (await DUMMY_PASSWORD_HASH),

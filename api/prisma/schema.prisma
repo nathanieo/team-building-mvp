@@ -13,6 +13,8 @@ datasource db {
 model Facilitator {
   id           String               @id @default(uuid()) @db.Uuid
   email        String               @unique @db.Text
+  /// Lowercase login name. Null only for accounts created before usernames existed.
+  username     String?              @unique @db.Text
   displayName  String               @db.Text
   /// scrypt hash in the form scrypt$N$r$p$salt$hash. Never returned by the API.
   passwordHash String               @db.Text

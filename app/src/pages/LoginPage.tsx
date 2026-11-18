@@ -10,11 +10,11 @@ import { TextField } from "../components/TextField";
 import { ApiError } from "../lib/api";
 
 interface FormValues {
-  email: string;
+  identifier: string;
   password: string;
 }
 
-const EMPTY: FormValues = { email: "", password: "" };
+const EMPTY: FormValues = { identifier: "", password: "" };
 
 const PROVIDERS = [
   { name: "Google", Icon: GoogleIcon },
@@ -102,14 +102,15 @@ function LoginPage(): ReactElement {
 
         <form className="stack" noValidate onSubmit={(event) => void handleSubmit(event)}>
           <TextField
-            label="Email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            inputMode="email"
-            value={values.email}
-            error={fieldErrors.email}
-            onChange={(event) => update("email", event.target.value)}
+            label="Username or email"
+            name="identifier"
+            autoComplete="username"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            value={values.identifier}
+            error={fieldErrors.identifier}
+            onChange={(event) => update("identifier", event.target.value)}
           />
 
           <TextField

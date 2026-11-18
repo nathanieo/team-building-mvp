@@ -4,6 +4,8 @@ import type { FieldErrors, Validation } from "./validation.js";
 export const AUTH_LIMITS = {
   displayNameMaximumLength: 80,
   emailMaximumLength: 254,
+  usernameMinimumLength: 3,
+  usernameMaximumLength: 30,
   passwordMinimumLength: 10,
   passwordMaximumLength: 200,
 } as const;
@@ -12,16 +14,22 @@ export const AUTH_LIMITS = {
 export interface Facilitator {
   id: string;
   email: string;
+  /** Null for accounts created before usernames existed; they log in with their email. */
+  username: string | null;
   displayName: string;
 }
 
 export interface FacilitatorLoginRequest {
-  email: string;
+  /** A username or an email address. Anything containing "@" is treated as an email. */
+  identifier: string;
   password: string;
 }
 
-export interface FacilitatorRegisterRequest extends FacilitatorLoginRequest {
+export interface FacilitatorRegisterRequest {
   displayName: string;
+  username: string;
+  email: string;
+  password: string;
   /**
    * Required by the API only when FACILITATOR_INVITE_CODE is configured, so a
    * deployed instance does not accept facilitator accounts from anyone.
@@ -34,14 +42,26 @@ export interface FacilitatorSessionResponse {
   facilitator: Facilitator;
 }
 
-export type LoginField = "email" | "password";
-export type RegisterField = LoginField | "displayName" | "inviteCode";
+export type LoginField = "identifier" | "password";
+export type RegisterField = "displayName" | "username" | "email" | "password" | "inviteCode";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** Letters, numbers, periods and underscores, starting and ending with a letter or number. */
+const USERNAME_PATTERN = /^[a-z0-9](?:[a-z0-9._]*[a-z0-9])?$/;
 
 /** Lowercases so the same address cannot register twice with different casing. */
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
+}
+
+/** Lowercases so "Kim" and "kim" are the same username. */
+export function normalizeUsername(username: string): string {
+  return username.trim().toLowerCase();
+}
+
+/** Usernames can never contain "@", so this tells the two kinds of login apart. */
+export function isEmailIdentifier(identifier: string): boolean {
+  return identifier.includes("@");
 }
 
 function validateEmail(email: string): string | undefined {
@@ -52,25 +72,39 @@ function validateEmail(email: string): string | undefined {
   return undefined;
 }
 
+function validateUsername(username: string): string | undefined {
+  if (!username) return "Choose a username.";
+  if (
+    username.length < AUTH_LIMITS.usernameMinimumLength ||
+    username.length > AUTH_LIMITS.usernameMaximumLength
+  ) {
+    return `Use ${AUTH_LIMITS.usernameMinimumLength} to ${AUTH_LIMITS.usernameMaximumLength} characters.`;
+  }
+  if (!USERNAME_PATTERN.test(username)) {
+    return "Use letters, numbers, periods and underscores, starting and ending with a letter or number.";
+  }
+  return undefined;
+}
+
 /**
  * Validates a login body. Passwords are not trimmed, and login only checks
- * presence so the error never reveals the password policy of an account.
+ * presence so the error never reveals the username or password rules of an account.
  */
 export function validateLoginRequest(
   body: unknown,
 ): Validation<FacilitatorLoginRequest, LoginField> {
   const source = isRecord(body) ? body : {};
-  const email = normalizeEmail(readString(source, "email"));
+  // Emails and usernames are both stored lowercase, so one normalization fits both.
+  const identifier = readString(source, "identifier").toLowerCase();
   const password = typeof source.password === "string" ? source.password : "";
   const errors: FieldErrors<LoginField> = {};
 
-  const emailError = validateEmail(email);
-  if (emailError) errors.email = emailError;
+  if (!identifier) errors.identifier = "Enter your username or email.";
   if (!password) errors.password = "Enter your password.";
 
   return Object.keys(errors).length > 0
     ? { ok: false, errors }
-    : { ok: true, value: { email, password } };
+    : { ok: true, value: { identifier, password } };
 }
 
 export function validateRegisterRequest(
@@ -78,6 +112,7 @@ export function validateRegisterRequest(
 ): Validation<FacilitatorRegisterRequest, RegisterField> {
   const source = isRecord(body) ? body : {};
   const displayName = readString(source, "displayName");
+  const username = normalizeUsername(readString(source, "username"));
   const email = normalizeEmail(readString(source, "email"));
   const password = typeof source.password === "string" ? source.password : "";
   const errors: FieldErrors<RegisterField> = {};
@@ -86,6 +121,9 @@ export function validateRegisterRequest(
   else if (displayName.length > AUTH_LIMITS.displayNameMaximumLength) {
     errors.displayName = `Use ${AUTH_LIMITS.displayNameMaximumLength} characters or fewer.`;
   }
+
+  const usernameError = validateUsername(username);
+  if (usernameError) errors.username = usernameError;
 
   const emailError = validateEmail(email);
   if (emailError) errors.email = emailError;
@@ -100,6 +138,6 @@ export function validateRegisterRequest(
     ? { ok: false, errors }
     : {
         ok: true,
-        value: { displayName, email, password, inviteCode: readString(source, "inviteCode") },
+        value: { displayName, username, email, password, inviteCode: readString(source, "inviteCode") },
       };
 }

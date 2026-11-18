@@ -9,11 +9,12 @@ import { ApiError } from "../lib/api";
 
 interface FormValues {
   displayName: string;
+  username: string;
   email: string;
   password: string;
 }
 
-const EMPTY: FormValues = { displayName: "", email: "", password: "" };
+const EMPTY: FormValues = { displayName: "", username: "", email: "", password: "" };
 
 /**
  * The API only asks for an invite code when FACILITATOR_INVITE_CODE is set on
@@ -90,6 +91,19 @@ function SignupPage(): ReactElement {
           value={values.displayName}
           error={fieldErrors.displayName}
           onChange={(event) => update("displayName", event.target.value)}
+        />
+
+        <TextField
+          label="Username"
+          name="username"
+          autoComplete="username"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          value={values.username}
+          error={fieldErrors.username}
+          hint="Letters, numbers, periods and underscores. You can log in with this or your email."
+          onChange={(event) => update("username", event.target.value)}
         />
 
         <TextField

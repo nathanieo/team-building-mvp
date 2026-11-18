@@ -55,14 +55,24 @@ describe.skipIf(!databaseUrl)("facilitator flow (PostgreSQL)", () => {
     };
   }
 
-  const account = { displayName: "Dr. Kim", email: "kim@wichita.edu", password: "correct horse battery" };
+  const account = {
+    displayName: "Dr. Kim",
+    username: "dr.kim",
+    email: "kim@wichita.edu",
+    password: "correct horse battery",
+  };
   let cookie = "";
 
   it("registers a facilitator and sets an HttpOnly session cookie", async () => {
     const result = await call("/auth/register", { method: "POST", body: JSON.stringify(account) });
     expect(result.status).toBe(201);
     expect(result.body).toEqual({
-      facilitator: { id: expect.any(String), email: account.email, displayName: account.displayName },
+      facilitator: {
+        id: expect.any(String),
+        email: account.email,
+        username: account.username,
+        displayName: account.displayName,
+      },
     });
     expect(result.cookie).toMatch(/^tb_session=/);
   });
@@ -76,16 +86,32 @@ describe.skipIf(!databaseUrl)("facilitator flow (PostgreSQL)", () => {
     expect(result.body?.fieldErrors).toHaveProperty("email");
   });
 
+  it("rejects duplicate usernames regardless of case", async () => {
+    const result = await call("/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ ...account, email: "someone.else@wichita.edu", username: "Dr.Kim" }),
+    });
+    expect(result.status).toBe(400);
+    expect(result.body?.fieldErrors).toHaveProperty("username");
+    expect(result.body?.fieldErrors).not.toHaveProperty("email");
+  });
+
   it("logs in with the right password only", async () => {
     const wrong = await call("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email: account.email, password: "not the password" }),
+      body: JSON.stringify({ identifier: account.email, password: "not the password" }),
     });
     expect(wrong.status).toBe(401);
 
+    const byUsername = await call("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ identifier: "DR.KIM", password: account.password }),
+    });
+    expect(byUsername.status).toBe(200);
+
     const right = await call("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email: account.email, password: account.password }),
+      body: JSON.stringify({ identifier: account.email, password: account.password }),
     });
     expect(right.status).toBe(200);
     cookie = right.cookie ?? "";
@@ -116,7 +142,12 @@ describe.skipIf(!databaseUrl)("facilitator flow (PostgreSQL)", () => {
   it("hides other facilitators' classes", async () => {
     const other = await call("/auth/register", {
       method: "POST",
-      body: JSON.stringify({ displayName: "Dr. Lee", email: "lee@wichita.edu", password: "another long password" }),
+      body: JSON.stringify({
+        displayName: "Dr. Lee",
+        username: "drlee",
+        email: "lee@wichita.edu",
+        password: "another long password",
+      }),
     });
     const otherCookie = other.cookie ?? "";
     const mine = ((await call("/cohorts", { cookie })).body?.cohorts ?? []) as Array<{ id: string }>;

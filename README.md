@@ -11,7 +11,7 @@ An MVP for forming fair, explainable student teams in a class. It uses the same 
 
 **Step 1: Facilitator login and dashboard**
 
-- `/login` lets facilitators log in, and `/signup` (linked from "Join Team Building") creates an account. Passwords are hashed with scrypt, sessions use an HttpOnly cookie that is stored hashed in Postgres, and repeated failed logins are rate-limited. The Google, Apple and Microsoft buttons are placeholders until single sign-on is connected.
+- `/login` lets facilitators log in with a username or email, and `/signup` (linked from "Join Team Building") creates an account. Passwords are hashed with scrypt, sessions use an HttpOnly cookie that is stored hashed in Postgres, and repeated failed logins are rate-limited. The Google, Apple and Microsoft buttons are placeholders until single sign-on is connected.
 - `/dashboard` shows totals across classes (classes, students joined, questionnaire completion, teams formed) and one card per class with its join code, progress bar and next step.
 - **New class** creates a class with a name, term and team size, and generates a 6-character join code without look-alike characters (no 0/O, 1/I/L).
 
@@ -67,8 +67,8 @@ All routes are under `/api`. Errors always look like `{ "error": string, "fieldE
 | Method | Route | Auth | Purpose |
 |---|---|---|---|
 | GET | `/health` | none | Liveness check |
-| POST | `/auth/register` | none | `{ displayName, email, password, inviteCode }` → sets the session cookie |
-| POST | `/auth/login` | none | `{ email, password }` → sets the session cookie |
+| POST | `/auth/register` | none | `{ displayName, username, email, password, inviteCode }` → sets the session cookie. Usernames are 3–30 lowercase letters, numbers, periods and underscores |
+| POST | `/auth/login` | none | `{ identifier, password }`, where `identifier` is a username or an email → sets the session cookie |
 | POST | `/auth/logout` | cookie | Ends the session |
 | GET | `/auth/me` | cookie | Current facilitator |
 | GET | `/cohorts` | cookie | The facilitator's classes, with counts |
