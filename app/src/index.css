@@ -262,95 +262,53 @@ select {
 
 /* ---------- Login ---------- */
 
+/* One centered column on the brand gradient (the same one the intro uses, so it fades straight in). */
 .auth-layout {
   display: grid;
   min-height: 100vh;
-  grid-template-columns: minmax(320px, 0.9fr) 1.1fr;
-}
-
-.auth-layout__brand {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 28px;
-  padding: clamp(32px, 6vw, 80px);
-  color: #e9f4f0;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 32px 16px;
   background:
     radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.12), transparent 22rem),
     linear-gradient(160deg, var(--color-brand) 0%, var(--color-brand-dark) 100%);
 }
 
-.auth-layout__brand h2 {
-  max-width: 22ch;
-  color: #ffffff;
-  font-size: clamp(1.6rem, 2.6vw, 2.2rem);
-  line-height: 1.2;
-}
-
-.auth-steps {
+.auth-layout__main {
   display: grid;
-  gap: 14px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  counter-reset: step;
+  gap: 20px;
+  justify-items: center;
+  width: min(400px, 100%);
 }
 
-.auth-steps li {
+.brand-logo {
+  display: block;
+  flex: none;
+}
+
+.auth-brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  counter-increment: step;
-}
-
-.auth-steps li::before {
-  content: counter(step);
-  display: grid;
-  flex: none;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-.brand-mark {
-  display: grid;
-  width: 48px;
-  height: 48px;
-  place-items: center;
-  border-radius: 12px;
-  color: var(--color-brand-dark);
-  background: #ffffff;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-}
-
-.brand-mark--small {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
   color: #ffffff;
-  background: var(--color-brand);
-  font-size: 0.8rem;
+  font-size: 1.2rem;
+  font-weight: 750;
+  letter-spacing: -0.01em;
 }
 
-.auth-layout__main {
-  display: grid;
-  padding: 32px 20px;
-  place-items: center;
+.auth-brand .brand-logo {
+  border-radius: 24%;
+  backdrop-filter: blur(6px);
 }
 
 .auth-card {
   display: grid;
   gap: 18px;
-  width: min(420px, 100%);
-}
-
-.auth-card__lead {
-  color: var(--color-text-muted);
+  width: 100%;
+  padding: clamp(20px, 5vw, 28px);
+  border-radius: 16px;
+  background: var(--color-surface);
+  box-shadow: 0 24px 60px rgba(9, 32, 26, 0.28);
 }
 
 .segmented {
@@ -377,13 +335,150 @@ select {
   box-shadow: 0 1px 2px rgba(21, 43, 38, 0.12);
 }
 
-@media (max-width: 820px) {
-  .auth-layout {
-    grid-template-columns: 1fr;
-  }
+/* Animated "how it works" tree that plays over the login page once per tab. */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(16px, 4vh, 32px);
+  padding: 24px 16px;
+  color: #e9f4f0;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.12), transparent 22rem),
+    linear-gradient(160deg, var(--color-brand) 0%, var(--color-brand-dark) 100%);
+  cursor: pointer;
+  transition: opacity 450ms ease;
+}
 
-  .auth-layout__brand {
-    display: none;
+.intro--leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.intro__tree {
+  width: min(400px, 100%);
+  height: auto;
+  max-height: 60vh;
+  overflow: visible;
+}
+
+.intro__card {
+  fill: #ffffff;
+}
+
+.intro__title {
+  fill: var(--color-heading);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.intro__sub {
+  fill: var(--color-text-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.intro__team-label {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.intro__track {
+  fill: #e6eeea;
+}
+
+.intro__fill {
+  fill: var(--color-brand);
+  transform-box: fill-box;
+  transform-origin: left;
+  animation: intro-fill 650ms ease-out var(--d) both;
+}
+
+.intro__line {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  /* Hidden until its turn, so the round line caps don't show as dots early. */
+  opacity: 0;
+  animation: intro-draw 400ms ease-out var(--d) forwards;
+}
+
+.intro__node,
+.intro__dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: intro-pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.25) var(--d) both;
+}
+
+.intro__team {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: intro-grow 480ms cubic-bezier(0.2, 0.8, 0.3, 1) var(--d) both;
+}
+
+.intro__skip {
+  position: absolute;
+  right: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.85rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.intro__skip:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+@keyframes intro-draw {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes intro-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes intro-grow {
+  from {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes intro-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
   }
 }
 

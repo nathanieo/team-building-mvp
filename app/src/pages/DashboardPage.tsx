@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ReactElement } from "react";
 import type { CohortSummary, Facilitator } from "@team-building-mvp/contracts";
 import { useAuth } from "../auth/useAuth";
+import { BrandLogo } from "../components/BrandLogo";
 import { ClassCard } from "../components/ClassCard";
 import { CreateClassDialog } from "../components/CreateClassDialog";
 import { api, ApiError } from "../lib/api";
@@ -63,7 +64,7 @@ function DashboardPage({ facilitator }: { facilitator: Facilitator }): ReactElem
     <div className="dashboard">
       <header className="topbar">
         <div className="topbar__brand">
-          <span className="brand-mark brand-mark--small">TB</span>
+          <BrandLogo className="brand-logo" size={32} />
           Team Building
         </div>
         <div className="topbar__account">

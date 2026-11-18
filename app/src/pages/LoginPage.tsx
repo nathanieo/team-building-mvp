@@ -3,6 +3,8 @@ import type { FormEvent, ReactElement } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router";
 import { AUTH_LIMITS, validateLoginRequest, validateRegisterRequest } from "@team-building-mvp/contracts";
 import { useAuth } from "../auth/useAuth";
+import { BrandLogo } from "../components/BrandLogo";
+import { LoginIntro } from "../components/LoginIntro";
 import { TextField } from "../components/TextField";
 import { ApiError } from "../lib/api";
 
@@ -89,25 +91,15 @@ function LoginPage(): ReactElement {
 
   return (
     <div className="auth-layout">
-      <aside className="auth-layout__brand" aria-hidden="true">
-        <div className="brand-mark">TB</div>
-        <h2>Fair, explainable teams in one class period.</h2>
-        <ol className="auth-steps">
-          <li>Create a class and share the join code</li>
-          <li>Students answer two short questionnaires</li>
-          <li>Review suggested teams, adjust, and lock</li>
-        </ol>
-      </aside>
-
+      <LoginIntro />
       <main className="auth-layout__main">
+        <div className="auth-brand">
+          <BrandLogo className="brand-logo" size={44} variant="frosted" />
+          Team Building
+        </div>
+
         <div className="auth-card">
-          <p className="eyebrow">Facilitator</p>
           <h1>{isLogin ? "Log in" : "Create your account"}</h1>
-          <p className="auth-card__lead">
-            {isLogin
-              ? "Manage your classes, track questionnaire progress and form teams."
-              : "Set up a facilitator account to run your first class."}
-          </p>
 
           <div className="segmented" role="tablist" aria-label="Account">
             <button
