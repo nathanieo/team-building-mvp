@@ -102,7 +102,6 @@ function SignupPage(): ReactElement {
           spellCheck={false}
           value={values.username}
           error={fieldErrors.username}
-          hint="Letters, numbers, periods and underscores. You can log in with this or your email."
           onChange={(event) => update("username", event.target.value)}
         />
 
