@@ -411,58 +411,54 @@ select {
 
 .home {
   display: grid;
-  gap: 24px;
+  gap: 28px;
   justify-items: center;
-  width: min(760px, 100%);
+  width: min(560px, 100%);
 }
 
-.home__doors {
+.home__question {
+  color: #ffffff;
+  font-size: clamp(1.6rem, 4.5vw, 2.3rem);
+  line-height: 1.2;
+  text-align: center;
+  animation: door-in 480ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.home__choices {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   width: 100%;
 }
 
-@media (max-width: 640px) {
-  .home__doors {
-    grid-template-columns: 1fr;
-  }
-}
-
-.door {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: clamp(20px, 4vw, 28px);
-  border-radius: 16px;
+/* A big answer button: white, lifts on hover, turns solid green when picked. */
+.choice-card {
+  display: grid;
+  min-height: clamp(110px, 22vw, 150px);
+  place-items: center;
+  border-radius: 18px;
+  color: var(--color-heading);
   background: var(--color-surface);
   box-shadow: 0 24px 60px rgba(9, 32, 26, 0.28);
-  animation: door-in 480ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  font-size: clamp(1.2rem, 3.5vw, 1.5rem);
+  font-weight: 750;
+  text-decoration: none;
+  transition: transform 160ms ease, color 180ms ease, background-color 180ms ease;
+  animation: door-in 480ms cubic-bezier(0.2, 0.7, 0.2, 1) 120ms both;
 }
 
-.door + .door {
-  animation-delay: 90ms;
+.choice-card + .choice-card {
+  animation-delay: 200ms;
 }
 
-.door__icon {
-  display: grid;
-  width: 44px;
-  height: 44px;
-  place-items: center;
-  border-radius: 12px;
-  color: var(--color-brand);
-  background: var(--color-brand-soft);
+.choice-card:hover {
+  transform: translateY(-3px);
 }
 
-.door p {
-  color: var(--color-text-muted);
-}
-
-.door__actions {
-  display: grid;
-  gap: 12px;
-  margin-top: auto;
-  padding-top: 8px;
+.choice-card:active,
+.choice-card--pressed {
+  color: #ffffff;
+  background: var(--color-brand);
 }
 
 .code-input {
