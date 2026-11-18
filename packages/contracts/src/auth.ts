@@ -72,6 +72,11 @@ function validateEmail(email: string): string | undefined {
   return undefined;
 }
 
+/** Checks one email address (e.g. on the password reset page). Returns the message to show, if any. */
+export function emailError(email: string): string | undefined {
+  return validateEmail(normalizeEmail(email));
+}
+
 function validateUsername(username: string): string | undefined {
   if (!username) return "Choose a username.";
   if (

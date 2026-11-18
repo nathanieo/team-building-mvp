@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { Navigate, Route, Routes } from "react-router";
 import { RequireAuth } from "./auth/RequireAuth";
 import DashboardPage from "./pages/DashboardPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import HomePage from "./pages/HomePage";
 import JoinPage from "./pages/JoinPage";
 import LoginPage from "./pages/LoginPage";
@@ -15,6 +16,7 @@ function App(): ReactElement {
       <Route path="/join" element={<JoinPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route
         path="/dashboard"
         element={<RequireAuth>{(facilitator) => <DashboardPage facilitator={facilitator} />}</RequireAuth>}

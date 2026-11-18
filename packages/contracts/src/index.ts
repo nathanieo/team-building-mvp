@@ -10,6 +10,7 @@ export type { FieldErrors, Validation } from "./validation.js";
 
 export {
   AUTH_LIMITS,
+  emailError,
   isEmailIdentifier,
   normalizeEmail,
   normalizeUsername,

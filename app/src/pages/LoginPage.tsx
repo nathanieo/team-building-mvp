@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent, ReactElement } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router";
+import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { validateLoginRequest } from "@team-building-mvp/contracts";
 import { useAuth } from "../auth/useAuth";
 import { AuthLayout, AuthSwitch } from "../components/AuthLayout";
@@ -8,6 +8,7 @@ import { LoginIntro } from "../components/LoginIntro";
 import { AppleIcon, GoogleIcon, MicrosoftIcon } from "../components/SocialIcons";
 import { TextField } from "../components/TextField";
 import { ApiError } from "../lib/api";
+import { usePressNavigate } from "../lib/usePressNavigate";
 
 interface FormValues {
   identifier: string;
@@ -36,6 +37,7 @@ function LoginPage(): ReactElement {
   const [notice, setNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const { onPress } = usePressNavigate();
 
   if (state.status === "signed-in") return <Navigate replace to="/dashboard" />;
 
@@ -132,6 +134,14 @@ function LoginPage(): ReactElement {
               </button>
             }
           />
+
+          <Link
+            to="/forgot-password"
+            className="auth-forgot"
+            onClick={(event) => onPress(event, "/forgot-password")}
+          >
+            Forgot password?
+          </Link>
 
           <button className="button button--primary button--block" type="submit" disabled={submitting}>
             {submitting ? "Logging in…" : "Log in"}

@@ -12,7 +12,7 @@ An MVP for forming fair, explainable student teams in a class. It uses the same 
 **Step 1: Facilitator login and dashboard**
 
 - `/` asks "Are you a student or a teacher?". Students go to `/join` to type their class code (checked against the join-code format; the join flow itself is the next roadmap step), and teachers go to log in, or to their dashboard if already signed in.
-- `/login` lets facilitators log in with a username or email, and `/signup` (linked from "Join Team Building") creates an account. Passwords are hashed with scrypt, sessions use an HttpOnly cookie that is stored hashed in Postgres, and repeated failed logins are rate-limited. The Google, Apple and Microsoft buttons are placeholders until single sign-on is connected.
+- `/login` lets facilitators log in with a username or email, and `/signup` (linked from "Join Team Building") creates an account. "Forgot password?" opens `/forgot-password`, which collects an email but can't send reset emails yet (no email service or reset endpoint). Passwords are hashed with scrypt, sessions use an HttpOnly cookie that is stored hashed in Postgres, and repeated failed logins are rate-limited. The Google, Apple and Microsoft buttons are placeholders until single sign-on is connected.
 - `/dashboard` shows totals across classes (classes, students joined, questionnaire completion, teams formed) and one card per class with its join code, progress bar and next step.
 - **New class** creates a class with a name, term and team size, and generates a 6-character join code without look-alike characters (no 0/O, 1/I/L).
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  emailError,
   isEmailIdentifier,
   joinCodeError,
   normalizeJoinCode,
@@ -31,6 +32,14 @@ describe("validateLoginRequest", () => {
 
   it("rejects non-object bodies", () => {
     expect(validateLoginRequest("hello").ok).toBe(false);
+  });
+});
+
+describe("emailError", () => {
+  it("accepts a real address in any casing and explains bad ones", () => {
+    expect(emailError("  Kim@WICHITA.edu ")).toBeUndefined();
+    expect(emailError("")).toMatch(/Enter your email/);
+    expect(emailError("kim@wichita")).toMatch(/valid email/);
   });
 });
 
