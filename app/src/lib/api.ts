@@ -9,6 +9,10 @@ import type {
   FacilitatorRegisterRequest,
   FacilitatorSessionResponse,
   JoinClassResponse,
+  QuestionnaireId,
+  QuestionnaireResponse,
+  SaveAnswerRequest,
+  SaveAnswerResponse,
   StudentHomeResponse,
   StudentJoinRequest,
   StudentJoinResponse,
@@ -89,6 +93,15 @@ export const api = {
   studentLogin: (body: StudentLoginRequest) =>
     request<StudentHomeResponse>("/student/login", { method: "POST", body: JSON.stringify(body) }),
   studentLogout: () => request<null>("/student/logout", { method: "POST" }),
+  getQuestionnaire: (code: string, id: QuestionnaireId) =>
+    request<QuestionnaireResponse>(
+      `/student/classes/${encodeURIComponent(code)}/questionnaires/${encodeURIComponent(id)}`,
+    ),
+  saveAnswer: (code: string, id: QuestionnaireId, questionId: string, body: SaveAnswerRequest) =>
+    request<SaveAnswerResponse>(
+      `/student/classes/${encodeURIComponent(code)}/questionnaires/${encodeURIComponent(id)}/answers/${encodeURIComponent(questionId)}`,
+      { method: "PUT", body: JSON.stringify(body) },
+    ),
   // Student sign-up. The API doesn't have these two endpoints yet; demo mode answers them.
   lookupJoinCode: (code: string) => request<JoinClassResponse>(`/join/${encodeURIComponent(code)}`),
   joinClass: (code: string, body: StudentJoinRequest) =>

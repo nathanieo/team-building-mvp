@@ -7,6 +7,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import HomePage from "./pages/HomePage";
 import JoinPage from "./pages/JoinPage";
 import LoginPage from "./pages/LoginPage";
+import QuestionnairePage from "./pages/QuestionnairePage";
 import SignupPage from "./pages/SignupPage";
 import StudentHomePage from "./pages/StudentHomePage";
 import StudentSignupPage from "./pages/StudentSignupPage";
@@ -23,6 +24,7 @@ function App(): ReactElement {
         <Route path="/join/:code" element={<StudentSignupPage />} />
         <Route path="/student" element={<StudentHomePage />} />
         <Route path="/student/:code" element={<StudentHomePage />} />
+        <Route path="/student/:code/questionnaire/:id" element={<QuestionnairePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />

@@ -5,6 +5,10 @@
  * `import.meta.env.DEV`, so production builds don't include it.
  */
 import {
+  buildSkillsQuestionnaire,
+  buildWorkStyleQuestionnaire,
+  countAnswered,
+  isValidAnswer,
   JOIN_CODE_ALPHABET,
   COHORT_LIMITS,
   normalizeJoinCode,
@@ -16,6 +20,9 @@ import type {
   ClassStudent,
   CohortSummary,
   Facilitator,
+  Questionnaire,
+  QuestionnaireAnswer,
+  QuestionnaireId,
   StudentHomeResponse,
   StudentStage,
   StudentTeam,
@@ -43,6 +50,8 @@ function student(
 interface DemoClass {
   summary: Omit<CohortSummary, "studentCount" | "completedCount">;
   students: ClassStudent[];
+  /** Projects students rank in the skills questionnaire. */
+  projects: Array<{ id: string; label: string }>;
 }
 
 const classes: DemoClass[] = [
@@ -69,6 +78,11 @@ const classes: DemoClass[] = [
       student("george.chen@school.edu", null, null, false),
       student("hana.sato@school.edu", null, null, false),
     ],
+    projects: [
+      { id: "proj-nav", label: "Campus navigation app" },
+      { id: "proj-food", label: "Food bank inventory tracker" },
+      { id: "proj-study", label: "Study group matcher" },
+    ],
   },
   {
     summary: {
@@ -85,6 +99,7 @@ const classes: DemoClass[] = [
     },
     // Ana is in both sample classes, so the student page's class switcher has something to switch.
     students: [student("ana.lopez@school.edu", "Ana Lopez", "W10234561", true)],
+    projects: [],
   },
 ];
 
@@ -92,20 +107,50 @@ let signedIn = true;
 
 // ----- Student side -----
 
-const QUESTIONNAIRES = [
-  { id: "work-style", title: "Work style", minutes: 10, total: 20 },
-  { id: "skills", title: "Skills and project interests", minutes: 5, total: 8 },
-] as const;
-
-/** Questions answered per student in each class (key "CODE|email"): [work style, skills]. */
-const answered = new Map<string, [number, number]>();
+/** Saved answers per student, class and questionnaire (key "CODE|email|questionnaire"). */
+const answerStore = new Map<string, Record<string, QuestionnaireAnswer>>();
 /** Classes (by join code) whose teams the demo shows as locked. */
 const lockedTeams = new Set<string>();
 /** Email of the student signed in on the student side, if any. */
 let studentEmail: string | null = null;
 
-function progressFor(code: string, email: string, finished: boolean): [number, number] {
-  return answered.get(`${code}|${email}`) ?? (finished ? [20, 8] : [12, 0]);
+function questionnaireFor(item: DemoClass, id: QuestionnaireId): Questionnaire {
+  return id === "work-style" ? buildWorkStyleQuestionnaire() : buildSkillsQuestionnaire(item.projects);
+}
+
+/** Made-up answers for the first `count` questions, for sample students. */
+function sampleAnswers(questionnaire: Questionnaire, count: number): Record<string, QuestionnaireAnswer> {
+  const answers: Record<string, QuestionnaireAnswer> = {};
+  questionnaire.questions.slice(0, count).forEach((question, index) => {
+    answers[question.id] =
+      question.kind === "scale" ? (index % 5) + 1 : question.options.slice(0, question.pick).map((option) => option.id);
+  });
+  return answers;
+}
+
+/** A student's answers, seeding sample students the first time: finished ones fully, others partway. */
+function answersFor(item: DemoClass, me: ClassStudent, id: QuestionnaireId): Record<string, QuestionnaireAnswer> {
+  const key = `${item.summary.joinCode}|${me.email}|${id}`;
+  let answers = answerStore.get(key);
+  if (!answers) {
+    const questionnaire = questionnaireFor(item, id);
+    const count = me.finished ? questionnaire.questions.length : id === "work-style" ? 12 : 0;
+    answers = sampleAnswers(questionnaire, count);
+    answerStore.set(key, answers);
+  }
+  return answers;
+}
+
+function setAnswersFor(item: DemoClass, me: ClassStudent, id: QuestionnaireId, answers: Record<string, QuestionnaireAnswer>): void {
+  answerStore.set(`${item.summary.joinCode}|${me.email}|${id}`, answers);
+}
+
+/** True once both questionnaires are complete; keeps the teacher's "finished" count in step. */
+function updateFinished(item: DemoClass, me: ClassStudent): void {
+  me.finished = (["work-style", "skills"] as const).every((id) => {
+    const questionnaire = questionnaireFor(item, id);
+    return countAnswered(questionnaire, answersFor(item, me, id)) === questionnaire.questions.length;
+  });
 }
 
 /** A made-up locked team built from the student and three classmates who joined. */
@@ -136,15 +181,20 @@ function studentHome(email: string): StudentHomeResponse | null {
   return {
     student: { displayName: first.displayName ?? email, email, studentId: first.studentId ?? "" },
     classes: mine.map(({ item, me }) => {
-      const [workStyle, skills] = progressFor(item.summary.joinCode, me.email, me.finished);
       return {
         code: item.summary.joinCode,
         name: item.summary.name,
         term: item.summary.term,
-        questionnaires: [
-          { ...QUESTIONNAIRES[0], answered: workStyle },
-          { ...QUESTIONNAIRES[1], answered: skills },
-        ],
+        questionnaires: (["work-style", "skills"] as const).map((id) => {
+          const questionnaire = questionnaireFor(item, id);
+          return {
+            id,
+            title: questionnaire.title,
+            minutes: questionnaire.minutes,
+            answered: countAnswered(questionnaire, answersFor(item, me, id)),
+            total: questionnaire.questions.length,
+          };
+        }),
         team: lockedTeams.has(item.summary.joinCode) ? demoTeam(item, me) : null,
       };
     }),
@@ -157,7 +207,11 @@ export function setDemoStudentStage(code: string, stage: StudentStage): void {
   const me = item?.students.find((entry) => entry.email === studentEmail);
   if (!item || !me) return;
   const done = stage !== "questionnaires";
-  answered.set(`${code}|${me.email}`, done ? [20, 8] : [12, 0]);
+  for (const id of ["work-style", "skills"] as const) {
+    const questionnaire = questionnaireFor(item, id);
+    const count = done ? questionnaire.questions.length : id === "work-style" ? 12 : 0;
+    setAnswersFor(item, me, id, sampleAnswers(questionnaire, count));
+  }
   me.finished = done;
   if (stage === "team") lockedTeams.add(code);
   else lockedTeams.delete(code);
@@ -237,6 +291,27 @@ export async function demoRespond(path: string, init: RequestInit = {}): Promise
     return ok(null, 204);
   }
 
+  const questionnaireMatch = pathname.match(/^\/student\/classes\/([^/]+)\/questionnaires\/([^/]+)(?:\/answers\/([^/]+))?$/);
+  if (questionnaireMatch) {
+    const [, rawCode = "", rawId = "", rawQuestion] = questionnaireMatch;
+    const item = classes.find((entry) => entry.summary.joinCode === decodeURIComponent(rawCode));
+    const me = item?.students.find((entry) => entry.joined && entry.email === studentEmail);
+    if (!studentEmail) return fail(401, "Enter your student email.");
+    const id = decodeURIComponent(rawId);
+    if (!item || !me || (id !== "work-style" && id !== "skills")) return fail(404, "That questionnaire doesn't exist.");
+    const questionnaire = questionnaireFor(item, id);
+    const answers = answersFor(item, me, id);
+    if (!rawQuestion && method === "GET") return ok({ questionnaire, answers });
+    if (rawQuestion && method === "PUT") {
+      const question = questionnaire.questions.find((entry) => entry.id === decodeURIComponent(rawQuestion));
+      const answer = readBody(init).answer;
+      if (!question || !isValidAnswer(question, answer)) return fail(400, "That answer doesn't fit the question.");
+      setAnswersFor(item, me, id, { ...answers, [question.id]: answer });
+      updateFinished(item, me);
+      return ok({ answered: countAnswered(questionnaire, answersFor(item, me, id)), total: questionnaire.questions.length });
+    }
+  }
+
   // Student sign-up doesn't need a teacher login.
   const joinMatch = pathname.match(/^\/join\/([^/]+)$/);
   if (joinMatch) {
@@ -259,7 +334,11 @@ export async function demoRespond(path: string, init: RequestInit = {}): Promise
       if (existing) Object.assign(existing, { displayName, studentId, joined: true });
       else item.students.push(student(email, displayName, studentId, true));
       studentEmail = email;
-      answered.set(`${code}|${email}`, [0, 0]);
+      const joinedEntry = item.students.find((entry) => entry.email === email);
+      if (joinedEntry) {
+        setAnswersFor(item, joinedEntry, "work-style", {});
+        setAnswersFor(item, joinedEntry, "skills", {});
+      }
       return ok({ student: { displayName, email } }, 201);
     }
   }
@@ -281,6 +360,7 @@ export async function demoRespond(path: string, init: RequestInit = {}): Promise
         createdAt: new Date().toISOString(),
       },
       students: [],
+      projects: [],
     };
     classes.unshift(created);
     return ok({ cohort: toSummary(created) }, 201);

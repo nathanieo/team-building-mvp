@@ -73,3 +73,27 @@ export type {
   StudentTeam,
   Teammate,
 } from "./student.js";
+
+export {
+  AGREEMENT_LABELS,
+  buildSkillsQuestionnaire,
+  buildWorkStyleQuestionnaire,
+  countAnswered,
+  firstUnanswered,
+  isValidAnswer,
+  PROJECT_RANK_QUESTION_ID,
+  SKILL_ITEMS,
+  SKILL_LABELS,
+  WORK_STYLE_ITEMS,
+} from "./questionnaire.js";
+export type {
+  BigFiveTrait,
+  Question,
+  Questionnaire,
+  QuestionnaireAnswer,
+  QuestionnaireResponse,
+  RankQuestion,
+  SaveAnswerRequest,
+  SaveAnswerResponse,
+  ScaleQuestion,
+} from "./questionnaire.js";

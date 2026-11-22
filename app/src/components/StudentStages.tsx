@@ -1,5 +1,5 @@
-import { useState } from "react";
 import type { ReactElement } from "react";
+import { Link } from "react-router";
 import type { QuestionnaireProgress, StudentClassView, StudentTeam } from "@team-building-mvp/contracts";
 
 function initials(name: string): string {
@@ -15,7 +15,6 @@ function questionnaireStatus(item: QuestionnaireProgress): { label: string; tone
 
 /** Stage 1: the two questionnaires, with progress and Start / Continue buttons. */
 export function QuestionnairesStage({ view }: { view: StudentClassView }): ReactElement {
-  const [notice, setNotice] = useState(false);
   const doneCount = view.questionnaires.filter((item) => item.answered >= item.total).length;
   // The bar follows questions answered, so it moves even before a whole questionnaire is done.
   const answeredTotal = view.questionnaires.reduce((sum, item) => sum + Math.min(item.answered, item.total), 0);
@@ -50,24 +49,17 @@ export function QuestionnairesStage({ view }: { view: StudentClassView }): React
                 </span>
               </span>
               {status.tone === "done" ? null : (
-                <button
-                  type="button"
+                <Link
+                  to={`/student/${view.code}/questionnaire/${item.id}`}
                   className={`button button--small ${status.tone === "partway" ? "button--primary" : "button--ghost"}`}
-                  onClick={() => setNotice(true)}
                 >
                   {status.tone === "partway" ? "Continue" : "Start"}
-                </button>
+                </Link>
               )}
             </li>
           );
         })}
       </ul>
-
-      {notice ? (
-        <div className="alert alert--info" role="status">
-          The questionnaire screens are coming next.
-        </div>
-      ) : null}
     </section>
   );
 }
