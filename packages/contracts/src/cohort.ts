@@ -107,6 +107,8 @@ export interface ClassStudent {
   email: string;
   /** The name the student typed when joining; null until they join. */
   displayName: string | null;
+  /** School student ID, entered when joining; null until they join. */
+  studentId: string | null;
   joined: boolean;
   /** Finished every questionnaire. Always false before joining. */
   finished: boolean;

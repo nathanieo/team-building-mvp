@@ -8,6 +8,7 @@ import HomePage from "./pages/HomePage";
 import JoinPage from "./pages/JoinPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import StudentSignupPage from "./pages/StudentSignupPage";
 
 /** Routes for the facilitator MVP. Student pages are added in the next step. */
 function App(): ReactElement {
@@ -18,6 +19,7 @@ function App(): ReactElement {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/join" element={<JoinPage />} />
+        <Route path="/join/:code" element={<StudentSignupPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />

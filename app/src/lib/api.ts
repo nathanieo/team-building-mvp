@@ -8,6 +8,9 @@ import type {
   FacilitatorLoginRequest,
   FacilitatorRegisterRequest,
   FacilitatorSessionResponse,
+  JoinClassResponse,
+  StudentJoinRequest,
+  StudentJoinResponse,
 } from "@team-building-mvp/contracts";
 import { isDemoMode } from "./demoFlag";
 
@@ -79,6 +82,10 @@ export const api = {
   listCohorts: () => request<CohortListResponse>("/cohorts"),
   createCohort: (body: CreateCohortRequest) =>
     request<CohortResponse>("/cohorts", { method: "POST", body: JSON.stringify(body) }),
+  // Student sign-up. The API doesn't have these two endpoints yet; demo mode answers them.
+  lookupJoinCode: (code: string) => request<JoinClassResponse>(`/join/${encodeURIComponent(code)}`),
+  joinClass: (code: string, body: StudentJoinRequest) =>
+    request<StudentJoinResponse>(`/join/${encodeURIComponent(code)}`, { method: "POST", body: JSON.stringify(body) }),
   // The API doesn't have these three endpoints yet; the Students tab is built against them.
   removeStudent: (cohortId: string, email: string) =>
     request<ClassStudentsResponse>(

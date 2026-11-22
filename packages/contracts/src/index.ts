@@ -55,3 +55,12 @@ export interface ApiErrorResponse {
   error: string;
   fieldErrors?: Record<string, string>;
 }
+
+export { STUDENT_LIMITS, validateStudentJoinRequest } from "./student.js";
+export type {
+  JoinClassInfo,
+  JoinClassResponse,
+  StudentJoinField,
+  StudentJoinRequest,
+  StudentJoinResponse,
+} from "./student.js";

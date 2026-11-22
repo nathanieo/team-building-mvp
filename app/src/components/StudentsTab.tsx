@@ -264,9 +264,12 @@ export function StudentsTab({ cohortId, onUnauthorized }: { cohortId: string; on
                   </span>
                   <span className="student-row__text">
                     <span className="student-row__name">{name}</span>
-                    <span className="student-row__sub">
+                    <span className="student-row__sub" title={student.joined ? student.email : undefined}>
                       {student.joined
-                        ? `${student.email} · ${student.finished ? "Questionnaires done" : "Answering questionnaires"}`
+                        ? [
+                            student.studentId ? `ID ${student.studentId}` : student.email,
+                            student.finished ? "Questionnaires done" : "Answering questionnaires",
+                          ].join(" · ")
                         : "Hasn't joined with the code yet"}
                     </span>
                   </span>

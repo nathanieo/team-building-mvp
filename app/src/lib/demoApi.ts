@@ -7,7 +7,9 @@
 import {
   JOIN_CODE_ALPHABET,
   COHORT_LIMITS,
+  normalizeJoinCode,
   validateCreateCohortRequest,
+  validateStudentJoinRequest,
 } from "@team-building-mvp/contracts";
 import type { ClassStudent, CohortSummary, Facilitator } from "@team-building-mvp/contracts";
 
@@ -20,8 +22,14 @@ const facilitator: Facilitator = {
   displayName: "Demo Teacher",
 };
 
-function student(email: string, displayName: string | null, joined: boolean, finished = false): ClassStudent {
-  return { email, displayName, joined, finished };
+function student(
+  email: string,
+  displayName: string | null,
+  studentId: string | null,
+  joined: boolean,
+  finished = false,
+): ClassStudent {
+  return { email, displayName, studentId, joined, finished };
 }
 
 interface DemoClass {
@@ -44,14 +52,14 @@ const classes: DemoClass[] = [
       createdAt: new Date(Date.now() - 2 * DAY_MS).toISOString(),
     },
     students: [
-      student("ana.lopez@school.edu", "Ana Lopez", true, true),
-      student("ben.kim@school.edu", "Ben Kim", true, true),
-      student("chloe.nguyen@school.edu", "Chloe Nguyen", true),
-      student("diego.ramos@school.edu", "Diego Ramos", true, true),
-      student("ella.park@school.edu", "Ella Park", true),
-      student("fatima.ali@school.edu", null, false),
-      student("george.chen@school.edu", null, false),
-      student("hana.sato@school.edu", null, false),
+      student("ana.lopez@school.edu", "Ana Lopez", "W10234561", true, true),
+      student("ben.kim@school.edu", "Ben Kim", "W10234588", true, true),
+      student("chloe.nguyen@school.edu", "Chloe Nguyen", "W10234612", true),
+      student("diego.ramos@school.edu", "Diego Ramos", "W10234647", true, true),
+      student("ella.park@school.edu", "Ella Park", "W10234690", true),
+      student("fatima.ali@school.edu", null, null, false),
+      student("george.chen@school.edu", null, null, false),
+      student("hana.sato@school.edu", null, null, false),
     ],
   },
   {
@@ -125,6 +133,31 @@ export async function demoRespond(path: string, init: RequestInit = {}): Promise
     signedIn = false;
     return ok(null, 204);
   }
+  // Student sign-up doesn't need a teacher login.
+  const joinMatch = pathname.match(/^\/join\/([^/]+)$/);
+  if (joinMatch) {
+    const code = normalizeJoinCode(decodeURIComponent(joinMatch[1] ?? ""));
+    const item = classes.find((entry) => entry.summary.joinCode === code);
+    if (!item) return fail(404, "We couldn't find a class with that code.");
+    if (method === "GET") return ok({ cohort: { name: item.summary.name, term: item.summary.term } });
+    if (method === "POST") {
+      const check = validateStudentJoinRequest(readBody(init));
+      if (!check.ok) return fail(400, "Check the highlighted fields.", check.errors as Record<string, string>);
+      const { displayName, studentId, email } = check.value;
+      const existing = item.students.find((entry) => entry.email === email);
+      if (existing?.joined) {
+        return fail(400, "Check the highlighted fields.", { email: "You've already joined this class with this email." });
+      }
+      if (item.students.some((entry) => entry.joined && entry.studentId === studentId)) {
+        return fail(400, "Check the highlighted fields.", { studentId: "That student ID has already joined this class." });
+      }
+      // Someone on the teacher's class list is marked joined; anyone else is added.
+      if (existing) Object.assign(existing, { displayName, studentId, joined: true });
+      else item.students.push(student(email, displayName, studentId, true));
+      return ok({ student: { displayName, email } }, 201);
+    }
+  }
+
   if (!signedIn) return fail(401, "Log in to continue.");
 
   if (pathname === "/cohorts" && method === "GET") return ok({ cohorts: classes.map(toSummary) });
@@ -158,7 +191,7 @@ export async function demoRespond(path: string, init: RequestInit = {}): Promise
     const emails = readBody(init).emails;
     for (const entry of Array.isArray(emails) ? emails : []) {
       if (typeof entry === "string" && !item.students.some((existing) => existing.email === entry)) {
-        item.students.push(student(entry, null, false));
+        item.students.push(student(entry, null, null, false));
       }
     }
     return ok({ students: item.students });

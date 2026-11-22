@@ -8,6 +8,7 @@ import {
   parseClassList,
   parseTeamSize,
   validateCreateCohortRequest,
+  validateStudentJoinRequest,
   validateLoginRequest,
   validateRegisterRequest,
 } from "./index.js";
@@ -105,6 +106,26 @@ describe("join codes", () => {
     expect(joinCodeError("")).toMatch(/Enter the class code/);
     expect(joinCodeError("BD8VE")).toMatch(/6 letters and numbers/);
     expect(joinCodeError("BD8VE0")).toMatch(/never use 0/);
+  });
+});
+
+describe("validateStudentJoinRequest", () => {
+  it("tidies a valid sign-up", () => {
+    expect(
+      validateStudentJoinRequest({ displayName: " Ana Lopez ", studentId: " w12 345-67 ", email: " Ana.Lopez@School.EDU " }),
+    ).toEqual({ ok: true, value: { displayName: "Ana Lopez", studentId: "W12345-67", email: "ana.lopez@school.edu" } });
+  });
+
+  it("explains each missing or bad field", () => {
+    const result = validateStudentJoinRequest({ displayName: "", studentId: "a!", email: "ana@school" });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors.displayName).toMatch(/full name/);
+      expect(result.errors.studentId).toMatch(/student ID/);
+      expect(result.errors.email).toMatch(/valid email/);
+    }
+    const empty = validateStudentJoinRequest({});
+    if (!empty.ok) expect(empty.errors.email).toBe("Enter your student email.");
   });
 });
 

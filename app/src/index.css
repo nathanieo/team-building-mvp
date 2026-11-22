@@ -432,6 +432,58 @@ select {
   background: var(--color-brand);
 }
 
+/* ---------- Student sign-up (/join/CODE) ---------- */
+
+.join-heading {
+  display: grid;
+  gap: 4px;
+}
+
+.join-heading p {
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.page-loading--inline {
+  min-height: 160px;
+}
+
+.join-done {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  padding: 12px 0 4px;
+  text-align: center;
+}
+
+.join-done p {
+  max-width: 34ch;
+  color: var(--color-text-muted);
+}
+
+.join-done__check {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: var(--color-brand);
+  font-size: 1.6rem;
+  font-weight: 800;
+  animation: intro-pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+}
+
+.join-done .join-done__next {
+  margin-top: 6px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--color-brand-soft);
+  color: var(--color-brand-dark);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 /* ---------- Front page (/) ---------- */
 
 /* Logo in a top bar, then one big question with two answer buttons. */
