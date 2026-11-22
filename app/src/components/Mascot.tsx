@@ -1,5 +1,5 @@
 import { useId } from "react";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 /**
  * "Sprout", the questionnaire buddy: a soft green dome with two leaves,
@@ -42,7 +42,8 @@ export type MascotProp =
   | "rocket"
   | "confetti"
   | "friends"
-  | "music";
+  | "music"
+  | "none";
 
 export type MascotMotion = "bounce" | "float" | "wiggle" | "sway" | "nod" | "dance";
 
@@ -568,7 +569,19 @@ function Gear({ x, y, r, fill, reverse = false }: { x: number; y: number; r: num
 }
 
 /** The sprout in its scene. `reacting` plays a quick hop (e.g. right after an answer). */
-export function Mascot({ scene, reacting = false }: { scene: MascotScene; reacting?: boolean }): ReactElement {
+export function Mascot({
+  scene,
+  reacting = false,
+  accessory,
+  title,
+}: {
+  scene: MascotScene;
+  reacting?: boolean;
+  /** Extra SVG drawn on the sprout's body (in the same 240×190 space), e.g. a personality's hat. */
+  accessory?: ReactNode;
+  /** If given, the mascot is announced to screen readers with this text instead of being hidden. */
+  title?: string;
+}): ReactElement {
   const { mood, prop, motion } = scene;
   // Unique gradient ids, in case two mascots are on screen at once.
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
@@ -576,7 +589,12 @@ export function Mascot({ scene, reacting = false }: { scene: MascotScene; reacti
   const blush = mood === "shy" || mood === "warm" ? 1 : 0.85;
 
   return (
-    <svg className="mascot" viewBox="0 -4 240 194" aria-hidden="true" focusable="false">
+    <svg
+      className="mascot"
+      viewBox="0 -4 240 194"
+      focusable="false"
+      {...(title ? { role: "img", "aria-label": title } : { "aria-hidden": true })}
+    >
       <defs>
         <radialGradient id={ids.body} cx="62%" cy="30%" r="80%">
           <stop offset="0%" stopColor="#b6e27c" />
@@ -609,6 +627,7 @@ export function Mascot({ scene, reacting = false }: { scene: MascotScene; reacti
         <Eyes mood={mood} />
         <Mouth mood={mood} />
         <Wearable prop={prop} />
+        {accessory}
         {mood === "oops" ? <path d="M160 82 q6 10 0 14 q-6 -4 0 -14 Z" fill={SKY} /> : null}
       </g>
 

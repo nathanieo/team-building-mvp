@@ -1014,6 +1014,589 @@ select {
   50% { transform: translateY(-8px); opacity: 0.6; }
 }
 
+/* ---------- Personality profile (/student/CODE/personality) ---------- */
+
+.persona-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: linear-gradient(180deg, #e3f5ea 0, #f5f8f6 560px);
+}
+
+.persona-bar {
+  padding: 16px clamp(16px, 4vw, 40px);
+}
+
+.persona-main {
+  display: grid;
+  gap: 44px;
+  width: min(760px, calc(100% - 32px));
+  margin: 0 auto;
+  padding-bottom: 72px;
+}
+
+/* Section A: the reveal. Mascot pops in, then the name, tagline and details rise in turn. */
+.persona-reveal {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.persona-reveal__mascot {
+  width: min(240px, 62vw);
+  animation: persona-pop 700ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+}
+
+.persona-kicker {
+  color: var(--color-brand);
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.persona-reveal > .persona-kicker {
+  animation: persona-rise 500ms ease 200ms both;
+}
+
+.persona-reveal__name {
+  color: var(--color-brand-dark);
+  font-size: clamp(2.2rem, 7vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  animation: persona-rise 600ms ease 280ms both;
+}
+
+.persona-reveal__tagline {
+  max-width: 34ch;
+  color: var(--color-heading);
+  font-size: clamp(1.05rem, 2.6vw, 1.25rem);
+  font-weight: 600;
+  animation: persona-rise 600ms ease 400ms both;
+}
+
+.persona-reveal__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+  animation: persona-rise 600ms ease 520ms both;
+}
+
+.match-pill,
+.persona-reveal__secondary {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.match-pill {
+  font-weight: 700;
+}
+
+.match-pill--strong {
+  color: #ffffff;
+  background: var(--color-brand);
+}
+
+.match-pill--clear {
+  color: var(--color-brand-dark);
+  background: var(--color-brand-soft);
+}
+
+.match-pill--blended,
+.persona-reveal__secondary {
+  border: 1px solid var(--color-border);
+  color: var(--color-brand-dark);
+  background: var(--color-surface);
+}
+
+.persona-reveal__intro {
+  max-width: 56ch;
+  margin-top: 6px;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  animation: persona-rise 600ms ease 640ms both;
+}
+
+.persona-note {
+  margin-top: -24px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  color: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+.persona-section {
+  display: grid;
+  gap: 14px;
+}
+
+.persona-section h2 {
+  font-size: clamp(1.3rem, 3vw, 1.6rem);
+}
+
+.persona-section__lead {
+  margin-top: -6px;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.persona-label {
+  display: inline-block;
+  margin-right: 6px;
+  color: var(--color-brand);
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Section B: why you got this personality. */
+.persona-insights,
+.trait-list,
+.blindspot-list,
+.ideal-list,
+.balance__list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.persona-insight {
+  display: flex;
+  gap: 14px;
+  padding: 16px 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.persona-insight:first-child,
+.blindspot:first-child {
+  border-top: 0;
+  padding-top: 4px;
+}
+
+.persona-insight__number {
+  display: grid;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: var(--color-brand);
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.persona-insight h3 {
+  margin-bottom: 2px;
+  font-size: 1.05rem;
+}
+
+.persona-insight__evidence {
+  margin-top: 6px;
+  padding-left: 10px;
+  border-left: 3px solid var(--color-brand-soft);
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  font-style: italic;
+}
+
+/* Section C: Big 5 breakdown. */
+.trait-list {
+  gap: 20px;
+}
+
+.trait-row {
+  display: grid;
+  gap: 8px;
+}
+
+.trait-row__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.trait-row__head h3 {
+  font-size: 1rem;
+}
+
+.trait-band {
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--color-text-muted);
+  background: #eef3f1;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.trait-band--high {
+  color: var(--color-brand-dark);
+  background: var(--color-brand-soft);
+}
+
+.trait-row__score {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.trait-row__score strong {
+  color: var(--color-heading);
+  font-size: 1.05rem;
+}
+
+.trait-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: #e6eeea;
+  overflow: hidden;
+}
+
+.trait-bar__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8fd04f 0%, var(--color-brand) 100%);
+  transform-origin: left;
+  animation: persona-grow 900ms ease 200ms both;
+}
+
+.trait-row p {
+  font-size: 0.94rem;
+}
+
+/* Section D: strengths. */
+.strength-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: 12px;
+}
+
+.strength-tile {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.strength-tile h3 {
+  color: var(--color-brand-dark);
+  font-size: 1.02rem;
+}
+
+.strength-tile p {
+  font-size: 0.92rem;
+}
+
+.strength-tile__example {
+  color: var(--color-text-muted);
+}
+
+/* Section E: blind spots. */
+.blindspot {
+  display: grid;
+  gap: 6px;
+  padding: 16px 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.blindspot h3 {
+  font-size: 1.02rem;
+}
+
+.blindspot__tip {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f1f7f4;
+  font-size: 0.92rem;
+}
+
+/* Section F: team role. */
+.team-role__title {
+  margin-top: -4px;
+  color: var(--color-brand-dark);
+  font-size: 1.15rem;
+  font-weight: 750;
+}
+
+.team-role__lead {
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+.team-role__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 14px 24px;
+  margin: 6px 0 0;
+}
+
+.team-role__grid div {
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.team-role__grid dt {
+  color: var(--color-brand);
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.team-role__grid dd {
+  margin: 4px 0 0;
+  font-size: 0.94rem;
+}
+
+/* Section G: who you work best with. */
+.compat-list {
+  display: grid;
+  gap: 16px;
+}
+
+.compat {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border-radius: 18px;
+  background: var(--color-surface);
+  box-shadow: 0 1px 2px rgba(21, 43, 38, 0.06), 0 10px 30px rgba(21, 43, 38, 0.07);
+}
+
+.compat__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+.compat__mascot {
+  flex: none;
+  width: 96px;
+}
+
+.compat__head h3 {
+  color: var(--color-brand-dark);
+  font-size: 1.3rem;
+}
+
+.compat__identity {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.compat h4 {
+  margin-top: 6px;
+  color: var(--color-brand);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.compat p,
+.compat li {
+  font-size: 0.94rem;
+}
+
+.compat__columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 12px;
+}
+
+.compat__columns ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+
+.compat__tip {
+  margin-top: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  color: var(--color-brand-dark);
+  background: var(--color-brand-soft);
+}
+
+/* Section H: ideal team. */
+.balance {
+  display: grid;
+  gap: 10px;
+  padding: 16px 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.balance__legend {
+  display: flex;
+  gap: 16px;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.balance__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.balance__swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.balance__list {
+  gap: 8px;
+}
+
+.balance__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.balance__label {
+  color: var(--color-heading);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.balance__dots {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.balance__dot {
+  width: 28px;
+  height: 10px;
+  border-radius: 999px;
+  background: #e6eeea;
+}
+
+.balance__swatch--you,
+.balance__dot--you {
+  background: var(--color-brand);
+}
+
+.balance__swatch--team,
+.balance__dot--team {
+  background: #a9dcbc;
+}
+
+.ideal-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.ideal-item__mascot {
+  flex: none;
+  width: 72px;
+}
+
+.ideal-item h3 {
+  font-size: 1rem;
+}
+
+.ideal-item p {
+  font-size: 0.92rem;
+}
+
+.persona-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.persona-footer__review {
+  color: var(--color-brand);
+  font-size: 0.92rem;
+}
+
+.persona-incomplete {
+  color: var(--color-text);
+}
+
+/* Link to the profile on the student's page. */
+.persona-teaser {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  border: 1px solid #cfe9d8;
+  border-radius: 18px;
+  color: var(--color-heading);
+  background: linear-gradient(120deg, #e3f5ea 0%, #ffffff 100%);
+  text-decoration: none;
+  transition: transform 160ms ease;
+}
+
+.persona-teaser:hover {
+  transform: translateY(-2px);
+}
+
+.persona-teaser__mascot {
+  flex: none;
+  width: 64px;
+}
+
+.persona-teaser__text {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+}
+
+.persona-teaser__text span {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.persona-teaser__arrow {
+  color: var(--color-brand);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+@keyframes persona-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6) translateY(20px);
+  }
+}
+
+@keyframes persona-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes persona-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
 /* ---------- Student home (/student) ---------- */
 
 .student-main {

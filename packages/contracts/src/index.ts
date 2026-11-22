@@ -97,3 +97,42 @@ export type {
   SaveAnswerResponse,
   ScaleQuestion,
 } from "./questionnaire.js";
+
+export {
+  ARCHETYPE_ORDER,
+  ARCHETYPES,
+  TEAM_DIMENSIONS,
+  TRAIT_ORDER,
+  TRAITS,
+} from "./personalityContent.js";
+export type {
+  Archetype,
+  ArchetypeId,
+  BlindSpot,
+  Strength,
+  TeamDimension,
+  TraitBand,
+  TraitDirection,
+  TraitId,
+} from "./personalityContent.js";
+export {
+  computePersonality,
+  PERSONALITY_RULES,
+  PERSONALITY_VERSION,
+  pickArchetypes,
+  scoreArchetypes,
+  scoreTraits,
+  teamBalance,
+  traitBand,
+} from "./personality.js";
+export type {
+  ArchetypeScore,
+  Compatibility,
+  IdealTeam,
+  Insight,
+  ItemEvidence,
+  MatchStrength,
+  PersonalityResult,
+  TeamRole,
+  TraitScore,
+} from "./personality.js";

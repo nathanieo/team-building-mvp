@@ -5,6 +5,7 @@ import { studentStage, validateStudentLoginRequest } from "@team-building-mvp/co
 import type { StudentClassView, StudentHomeResponse, StudentStage } from "@team-building-mvp/contracts";
 import { AuthLayout, AuthSwitch } from "../components/AuthLayout";
 import { BrandLogo } from "../components/BrandLogo";
+import { Mascot } from "../components/Mascot";
 import { QuestionnairesStage, TeamStage, WaitingStage } from "../components/StudentStages";
 import { TeamDots } from "../components/TeamDots";
 import { TextField } from "../components/TextField";
@@ -275,6 +276,9 @@ function StudentHomePage(): ReactElement {
   const { student } = load.home;
   const firstName = student.displayName.split(/\s+/)[0] ?? student.displayName;
   const stage = view ? studentStage(view) : null;
+  const workStyleDone = Boolean(
+    view?.questionnaires.some((item) => item.id === "work-style" && item.answered >= item.total),
+  );
 
   return (
     <div className="student-page">
@@ -307,6 +311,20 @@ function StudentHomePage(): ReactElement {
             {stage === "questionnaires" ? <QuestionnairesStage key={view.code} view={view} /> : null}
             {stage === "waiting" ? <WaitingStage /> : null}
             {stage === "team" && view.team ? <TeamStage team={view.team} /> : null}
+            {workStyleDone ? (
+              <Link to={`/student/${view.code}/personality`} className="persona-teaser">
+                <span className="persona-teaser__mascot" aria-hidden="true">
+                  <Mascot scene={{ mood: "happy", prop: "none", motion: "float" }} />
+                </span>
+                <span className="persona-teaser__text">
+                  <strong>Your personality profile is ready</strong>
+                  <span>See what your answers say about how you work with a team.</span>
+                </span>
+                <span className="persona-teaser__arrow" aria-hidden="true">
+                  →
+                </span>
+              </Link>
+            ) : null}
           </>
         ) : (
           <div className="stage-card stage-card--centered">

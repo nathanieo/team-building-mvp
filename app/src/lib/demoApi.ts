@@ -15,8 +15,10 @@ import {
   validateCreateCohortRequest,
   validateStudentJoinRequest,
   validateStudentLoginRequest,
+  WORK_STYLE_ITEMS,
 } from "@team-building-mvp/contracts";
 import type {
+  BigFiveTrait,
   ClassStudent,
   CohortSummary,
   Facilitator,
@@ -118,12 +120,37 @@ function questionnaireFor(item: DemoClass, id: QuestionnaireId): Questionnaire {
   return id === "work-style" ? buildWorkStyleQuestionnaire() : buildSkillsQuestionnaire(item.projects);
 }
 
+/**
+ * Each sample student's Work style leaning, as trait levels from 1 (low) to 5 (high),
+ * so the demo shows a range of personality profiles. Anyone else gets a gentle middle.
+ */
+const SAMPLE_TRAIT_LEVELS: Record<string, Record<BigFiveTrait, number>> = {
+  "ana.lopez@school.edu": { intellect: 2, conscientiousness: 5, extraversion: 2, agreeableness: 4, neuroticism: 1 },
+  "ben.kim@school.edu": { intellect: 4, conscientiousness: 2, extraversion: 5, agreeableness: 4, neuroticism: 2 },
+  "chloe.nguyen@school.edu": { intellect: 5, conscientiousness: 2, extraversion: 4, agreeableness: 3, neuroticism: 3 },
+  "diego.ramos@school.edu": { intellect: 2, conscientiousness: 4, extraversion: 4, agreeableness: 3, neuroticism: 1 },
+  "ella.park@school.edu": { intellect: 3, conscientiousness: 3, extraversion: 4, agreeableness: 5, neuroticism: 3 },
+};
+const DEFAULT_LEVELS: Record<BigFiveTrait, number> = { intellect: 3, conscientiousness: 4, extraversion: 3, agreeableness: 4, neuroticism: 2 };
+
 /** Made-up answers for the first `count` questions, for sample students. */
-function sampleAnswers(questionnaire: Questionnaire, count: number): Record<string, QuestionnaireAnswer> {
+function sampleAnswers(questionnaire: Questionnaire, count: number, email = ""): Record<string, QuestionnaireAnswer> {
+  const levels = SAMPLE_TRAIT_LEVELS[email] ?? DEFAULT_LEVELS;
   const answers: Record<string, QuestionnaireAnswer> = {};
   questionnaire.questions.slice(0, count).forEach((question, index) => {
-    answers[question.id] =
-      question.kind === "scale" ? (index % 5) + 1 : question.options.slice(0, question.pick).map((option) => option.id);
+    if (question.kind === "rank") {
+      answers[question.id] = question.options.slice(0, question.pick).map((option) => option.id);
+      return;
+    }
+    const item = WORK_STYLE_ITEMS.find((entry) => entry.id === question.id);
+    if (!item) {
+      answers[question.id] = (index % 5) + 1;
+      return;
+    }
+    // Vary one statement per trait a little, so it reads like a real person rather than a pattern.
+    const nudge = index % 4 === 2 ? -1 : 0;
+    const level = Math.min(5, Math.max(1, levels[item.trait] + nudge));
+    answers[question.id] = item.reverse ? 6 - level : level;
   });
   return answers;
 }
@@ -135,7 +162,7 @@ function answersFor(item: DemoClass, me: ClassStudent, id: QuestionnaireId): Rec
   if (!answers) {
     const questionnaire = questionnaireFor(item, id);
     const count = me.finished ? questionnaire.questions.length : id === "work-style" ? 12 : 0;
-    answers = sampleAnswers(questionnaire, count);
+    answers = sampleAnswers(questionnaire, count, me.email);
     answerStore.set(key, answers);
   }
   return answers;
@@ -210,7 +237,7 @@ export function setDemoStudentStage(code: string, stage: StudentStage): void {
   for (const id of ["work-style", "skills"] as const) {
     const questionnaire = questionnaireFor(item, id);
     const count = done ? questionnaire.questions.length : id === "work-style" ? 12 : 0;
-    setAnswersFor(item, me, id, sampleAnswers(questionnaire, count));
+    setAnswersFor(item, me, id, sampleAnswers(questionnaire, count, me.email));
   }
   me.finished = done;
   if (stage === "team") lockedTeams.add(code);

@@ -332,19 +332,28 @@ function QuestionnairePage(): ReactElement {
             <h1>{questionnaire.title} done</h1>
             <p className="quiz-done__lead">Thanks! Your answers are saved.</p>
             <div className="quiz-done__actions">
+              {id === "work-style" ? (
+                <Link
+                  to={`/student/${code}/personality`}
+                  className="button button--primary button--block"
+                  data-autofocus=""
+                >
+                  See your personality
+                </Link>
+              ) : null}
               {otherUnfinished ? (
                 <Link
                   to={`/student/${code}/questionnaire/${OTHER[id].id}`}
-                  className="button button--primary button--block"
-                  data-autofocus=""
+                  className={`button button--block ${id === "work-style" ? "button--ghost" : "button--primary"}`}
+                  data-autofocus={id === "work-style" ? undefined : ""}
                 >
                   Next: {OTHER[id].title}
                 </Link>
               ) : null}
               <Link
                 to={`/student/${code}`}
-                className={`button button--block ${otherUnfinished ? "button--ghost" : "button--primary"}`}
-                data-autofocus={otherUnfinished ? undefined : ""}
+                className={`button button--block ${otherUnfinished || id === "work-style" ? "button--ghost" : "button--primary"}`}
+                data-autofocus={otherUnfinished || id === "work-style" ? undefined : ""}
               >
                 Back to my page
               </Link>
