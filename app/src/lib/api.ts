@@ -9,8 +9,10 @@ import type {
   FacilitatorRegisterRequest,
   FacilitatorSessionResponse,
   JoinClassResponse,
+  StudentHomeResponse,
   StudentJoinRequest,
   StudentJoinResponse,
+  StudentLoginRequest,
 } from "@team-building-mvp/contracts";
 import { isDemoMode } from "./demoFlag";
 
@@ -82,6 +84,11 @@ export const api = {
   listCohorts: () => request<CohortListResponse>("/cohorts"),
   createCohort: (body: CreateCohortRequest) =>
     request<CohortResponse>("/cohorts", { method: "POST", body: JSON.stringify(body) }),
+  // Student home and sign-in. Not in the API yet; demo mode answers them.
+  studentHome: () => request<StudentHomeResponse>("/student/me"),
+  studentLogin: (body: StudentLoginRequest) =>
+    request<StudentHomeResponse>("/student/login", { method: "POST", body: JSON.stringify(body) }),
+  studentLogout: () => request<null>("/student/logout", { method: "POST" }),
   // Student sign-up. The API doesn't have these two endpoints yet; demo mode answers them.
   lookupJoinCode: (code: string) => request<JoinClassResponse>(`/join/${encodeURIComponent(code)}`),
   joinClass: (code: string, body: StudentJoinRequest) =>

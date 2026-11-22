@@ -474,14 +474,343 @@ select {
   animation: intro-pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
 }
 
-.join-done .join-done__next {
-  margin-top: 6px;
-  padding: 10px 14px;
+.join-done .join-done__go {
+  margin-top: 8px;
+}
+
+/* ---------- Student home (/student) ---------- */
+
+.student-main {
+  display: grid;
+  gap: 16px;
+  width: min(640px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 72px;
+}
+
+/* The student header lets the class list hang below it, above the page.
+   (Two classes so this beats .dash-hero's overflow: hidden, which comes later.) */
+.dash-hero.student-hero {
+  z-index: 2;
+  overflow: visible;
+}
+
+/* Class button at the top of a student's page; opens a list of their classes. */
+.class-switcher {
+  position: relative;
+}
+
+.class-switcher__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 12px 6px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 14px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.class-switcher__button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.class-switcher__button--single {
+  padding-right: 16px;
+  cursor: default;
+}
+
+.class-switcher__button--single:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.class-switcher__name {
+  font-weight: 700;
+}
+
+.class-switcher__term {
+  font-size: 0.82rem;
+  opacity: 0.8;
+}
+
+.class-switcher__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  min-width: 260px;
+  margin: 0;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--color-surface);
+  box-shadow: 0 18px 50px rgba(9, 32, 26, 0.25);
+  list-style: none;
+  animation: door-in 180ms ease both;
+}
+
+.class-switcher__option {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
   border-radius: 10px;
+  color: var(--color-heading);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.class-switcher__option:hover {
+  background: #f1f7f4;
+}
+
+.class-switcher__option[aria-current="page"] {
   background: var(--color-brand-soft);
-  color: var(--color-brand-dark);
-  font-size: 0.9rem;
+}
+
+.class-switcher__option .class-switcher__term {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+@media (max-width: 560px) {
+  .class-switcher__menu {
+    right: auto;
+    left: 0;
+  }
+}
+
+/* One white card per stage: questionnaires, waiting, or the team. */
+.stage-card {
+  display: grid;
+  gap: 14px;
+  padding: clamp(20px, 5vw, 28px);
+  border-radius: 18px;
+  background: var(--color-surface);
+  box-shadow: 0 1px 2px rgba(21, 43, 38, 0.06), 0 10px 30px rgba(21, 43, 38, 0.08);
+  animation: door-in 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.stage-card--centered {
+  justify-items: center;
+  padding-block: 40px;
+  text-align: center;
+}
+
+.stage-card__lead {
+  margin-top: -6px;
+  color: var(--color-text-muted);
+}
+
+.stage-card__kicker {
+  color: var(--color-brand);
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stage-card__kicker + h2 {
+  margin-top: -10px;
+  font-size: 1.5rem;
+}
+
+.stage-card__check {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: var(--color-brand);
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.stage-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.stage-progress .progress-bar {
+  flex: 1;
+}
+
+.questionnaire-list,
+.team-members,
+.team-why ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.questionnaire-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid #eef3f1;
+}
+
+.questionnaire-item__mark {
+  display: grid;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.questionnaire-item__mark--partway {
+  border-color: var(--color-brand);
+  background: conic-gradient(var(--color-brand) 0 50%, transparent 50% 100%);
+}
+
+.questionnaire-item__mark--done {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+}
+
+.questionnaire-item__text,
+.team-member__text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.questionnaire-item__title,
+.team-member__name {
+  color: var(--color-heading);
+  font-weight: 650;
+}
+
+.questionnaire-item__meta {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.team-member {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid #eef3f1;
+}
+
+.team-member__avatar {
+  display: grid;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--color-brand-dark);
+  background: var(--color-brand-soft);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.team-member__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.team-member__you {
+  padding: 1px 8px;
+  border-radius: 999px;
+  color: var(--color-amber-text);
+  background: var(--color-amber-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.team-member__email {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.team-member__email {
+  color: var(--color-brand);
+  text-decoration: none;
+}
+
+a.team-member__email:hover {
+  text-decoration: underline;
+}
+
+.team-why {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #f1f7f4;
+}
+
+.team-why h3 {
+  font-size: 0.95rem;
+}
+
+.team-why li {
+  position: relative;
+  padding: 3px 0 3px 22px;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.team-why li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--color-brand);
+  font-weight: 800;
+}
+
+/* Demo only: the "Preview stage" switcher and the sign-in hint. */
+.demo-stages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px dashed #e0c48f;
+  border-radius: 12px;
+  color: var(--color-amber-text);
+  background: var(--color-amber-soft);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.demo-stages > span {
+  margin-right: 4px;
+}
+
+.demo-hint {
+  padding: 8px 12px;
+  border-radius: 10px;
+  color: var(--color-amber-text);
+  background: var(--color-amber-soft);
+  font-size: 0.85rem;
+  text-align: center;
 }
 
 /* ---------- Front page (/) ---------- */

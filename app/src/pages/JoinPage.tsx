@@ -81,6 +81,7 @@ function JoinPage(): ReactElement {
         </button>
       </form>
 
+      <AuthSwitch prompt="Already joined?" lead="Go to" highlight="your page" to="/student" />
       <AuthSwitch prompt="Are you a teacher?" highlight="Log in" to="/login" />
     </AuthLayout>
   );

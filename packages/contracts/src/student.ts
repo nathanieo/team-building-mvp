@@ -69,3 +69,72 @@ export function validateStudentJoinRequest(
     ? { ok: false, errors }
     : { ok: true, value: { displayName, studentId, email } };
 }
+
+/** The two questionnaires every student answers before teams are formed. */
+export type QuestionnaireId = "work-style" | "skills";
+
+export interface QuestionnaireProgress {
+  id: QuestionnaireId;
+  title: string;
+  /** Rough time to finish, shown to students. */
+  minutes: number;
+  answered: number;
+  total: number;
+}
+
+export interface Teammate {
+  displayName: string;
+  email: string;
+  /** True for the student viewing the page. */
+  isYou: boolean;
+}
+
+/** A student's team. Only sent once the teacher has locked teams, never while they're a draft. */
+export interface StudentTeam {
+  name: string;
+  project: string | null;
+  members: Teammate[];
+  /** Plain-language reasons for the grouping, without anyone's personal answers. */
+  reasons: string[];
+}
+
+/** One class as its student sees it. */
+export interface StudentClassView {
+  code: string;
+  name: string;
+  term: string | null;
+  questionnaires: QuestionnaireProgress[];
+  team: StudentTeam | null;
+}
+
+export interface StudentHomeResponse {
+  student: { displayName: string; email: string; studentId: string };
+  classes: StudentClassView[];
+}
+
+/** Returning students get back in with just their student email. */
+export interface StudentLoginRequest {
+  email: string;
+}
+
+export type StudentLoginField = "email";
+
+/** Where a class is for its student: answering, waiting for teams, or on a team. */
+export type StudentStage = "questionnaires" | "waiting" | "team";
+
+export function studentStage(view: StudentClassView): StudentStage {
+  if (view.team) return "team";
+  return view.questionnaires.every((item) => item.answered >= item.total) ? "waiting" : "questionnaires";
+}
+
+export function validateStudentLoginRequest(
+  body: unknown,
+): Validation<StudentLoginRequest, StudentLoginField> {
+  const source = isRecord(body) ? body : {};
+  const email = normalizeEmail(readString(source, "email"));
+  const problem = emailError(email);
+  if (problem) {
+    return { ok: false, errors: { email: problem === "Enter your email address." ? "Enter your student email." : problem } };
+  }
+  return { ok: true, value: { email } };
+}

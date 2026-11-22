@@ -9,6 +9,8 @@ import {
   parseTeamSize,
   validateCreateCohortRequest,
   validateStudentJoinRequest,
+  validateStudentLoginRequest,
+  studentStage,
   validateLoginRequest,
   validateRegisterRequest,
 } from "./index.js";
@@ -125,6 +127,35 @@ describe("validateStudentJoinRequest", () => {
       expect(result.errors.email).toMatch(/valid email/);
     }
     const empty = validateStudentJoinRequest({});
+    if (!empty.ok) expect(empty.errors.email).toBe("Enter your student email.");
+  });
+});
+
+describe("studentStage", () => {
+  const view = {
+    code: "BD8VEF",
+    name: "CS 665",
+    term: null,
+    questionnaires: [
+      { id: "work-style" as const, title: "Work style", minutes: 10, answered: 20, total: 20 },
+      { id: "skills" as const, title: "Skills", minutes: 5, answered: 3, total: 8 },
+    ],
+    team: null,
+  };
+
+  it("follows the class from questionnaires to waiting to team", () => {
+    expect(studentStage(view)).toBe("questionnaires");
+    const done = { ...view, questionnaires: view.questionnaires.map((item) => ({ ...item, answered: item.total })) };
+    expect(studentStage(done)).toBe("waiting");
+    expect(studentStage({ ...done, team: { name: "Team 1", project: null, members: [], reasons: [] } })).toBe("team");
+  });
+});
+
+describe("validateStudentLoginRequest", () => {
+  it("only needs the student email, tidied", () => {
+    expect(validateStudentLoginRequest({ email: " Ana@School.edu " })).toEqual({ ok: true, value: { email: "ana@school.edu" } });
+    const empty = validateStudentLoginRequest({});
+    expect(empty.ok).toBe(false);
     if (!empty.ok) expect(empty.errors.email).toBe("Enter your student email.");
   });
 });

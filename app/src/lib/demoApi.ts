@@ -10,8 +10,16 @@ import {
   normalizeJoinCode,
   validateCreateCohortRequest,
   validateStudentJoinRequest,
+  validateStudentLoginRequest,
 } from "@team-building-mvp/contracts";
-import type { ClassStudent, CohortSummary, Facilitator } from "@team-building-mvp/contracts";
+import type {
+  ClassStudent,
+  CohortSummary,
+  Facilitator,
+  StudentHomeResponse,
+  StudentStage,
+  StudentTeam,
+} from "@team-building-mvp/contracts";
 
 const DAY_MS = 86_400_000;
 
@@ -75,11 +83,85 @@ const classes: DemoClass[] = [
       teamCount: 0,
       createdAt: new Date().toISOString(),
     },
-    students: [],
+    // Ana is in both sample classes, so the student page's class switcher has something to switch.
+    students: [student("ana.lopez@school.edu", "Ana Lopez", "W10234561", true)],
   },
 ];
 
 let signedIn = true;
+
+// ----- Student side -----
+
+const QUESTIONNAIRES = [
+  { id: "work-style", title: "Work style", minutes: 10, total: 20 },
+  { id: "skills", title: "Skills and project interests", minutes: 5, total: 8 },
+] as const;
+
+/** Questions answered per student in each class (key "CODE|email"): [work style, skills]. */
+const answered = new Map<string, [number, number]>();
+/** Classes (by join code) whose teams the demo shows as locked. */
+const lockedTeams = new Set<string>();
+/** Email of the student signed in on the student side, if any. */
+let studentEmail: string | null = null;
+
+function progressFor(code: string, email: string, finished: boolean): [number, number] {
+  return answered.get(`${code}|${email}`) ?? (finished ? [20, 8] : [12, 0]);
+}
+
+/** A made-up locked team built from the student and three classmates who joined. */
+function demoTeam(item: DemoClass, me: ClassStudent): StudentTeam {
+  const mates = item.students.filter((entry) => entry.joined && entry.email !== me.email).slice(0, 3);
+  return {
+    name: "Team Lumen",
+    project: "Campus navigation app",
+    members: [me, ...mates].map((entry) => ({
+      displayName: entry.displayName ?? entry.email,
+      email: entry.email,
+      isYou: entry.email === me.email,
+    })),
+    reasons: [
+      "Together you cover front-end, back-end and data work.",
+      "It mixes people who like to plan ahead with people who like to start fast.",
+      "Everyone ranked this project in their top three.",
+    ],
+  };
+}
+
+function studentHome(email: string): StudentHomeResponse | null {
+  const mine = classes
+    .map((item) => ({ item, me: item.students.find((entry) => entry.joined && entry.email === email) }))
+    .filter((entry): entry is { item: DemoClass; me: ClassStudent } => Boolean(entry.me));
+  const first = mine[0]?.me;
+  if (!first) return null;
+  return {
+    student: { displayName: first.displayName ?? email, email, studentId: first.studentId ?? "" },
+    classes: mine.map(({ item, me }) => {
+      const [workStyle, skills] = progressFor(item.summary.joinCode, me.email, me.finished);
+      return {
+        code: item.summary.joinCode,
+        name: item.summary.name,
+        term: item.summary.term,
+        questionnaires: [
+          { ...QUESTIONNAIRES[0], answered: workStyle },
+          { ...QUESTIONNAIRES[1], answered: skills },
+        ],
+        team: lockedTeams.has(item.summary.joinCode) ? demoTeam(item, me) : null,
+      };
+    }),
+  };
+}
+
+/** Demo stage switcher: puts the signed-in student's class at the given stage. */
+export function setDemoStudentStage(code: string, stage: StudentStage): void {
+  const item = classes.find((entry) => entry.summary.joinCode === code);
+  const me = item?.students.find((entry) => entry.email === studentEmail);
+  if (!item || !me) return;
+  const done = stage !== "questionnaires";
+  answered.set(`${code}|${me.email}`, done ? [20, 8] : [12, 0]);
+  me.finished = done;
+  if (stage === "team") lockedTeams.add(code);
+  else lockedTeams.delete(code);
+}
 
 export interface DemoResponse {
   status: number;
@@ -133,6 +215,28 @@ export async function demoRespond(path: string, init: RequestInit = {}): Promise
     signedIn = false;
     return ok(null, 204);
   }
+  // The student side has its own sign-in, separate from the teacher's.
+  if (pathname === "/student/me") {
+    const home = studentEmail ? studentHome(studentEmail) : null;
+    return home ? ok(home) : fail(401, "Enter your class code and student email.");
+  }
+  if (pathname === "/student/login" && method === "POST") {
+    const check = validateStudentLoginRequest(readBody(init));
+    if (!check.ok) return fail(400, "Check the highlighted fields.", check.errors as Record<string, string>);
+    const home = studentHome(check.value.email);
+    if (!home) {
+      return fail(400, "Check the highlighted fields.", {
+        email: "We couldn't find a student with that email. Join your class first.",
+      });
+    }
+    studentEmail = check.value.email;
+    return ok(home);
+  }
+  if (pathname === "/student/logout") {
+    studentEmail = null;
+    return ok(null, 204);
+  }
+
   // Student sign-up doesn't need a teacher login.
   const joinMatch = pathname.match(/^\/join\/([^/]+)$/);
   if (joinMatch) {
@@ -154,6 +258,8 @@ export async function demoRespond(path: string, init: RequestInit = {}): Promise
       // Someone on the teacher's class list is marked joined; anyone else is added.
       if (existing) Object.assign(existing, { displayName, studentId, joined: true });
       else item.students.push(student(email, displayName, studentId, true));
+      studentEmail = email;
+      answered.set(`${code}|${email}`, [0, 0]);
       return ok({ student: { displayName, email } }, 201);
     }
   }

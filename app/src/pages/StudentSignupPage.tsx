@@ -141,7 +141,9 @@ function StudentSignupPage(): ReactElement {
           <p>
             You've joined <strong>{cohort.name}</strong>. Your teacher can now see that you're in the class.
           </p>
-          <p className="join-done__next">Your questionnaires will open here soon.</p>
+          <Link to="/student" className="button button--primary button--block join-done__go">
+            Go to my page
+          </Link>
         </div>
       </AuthLayout>
     );
