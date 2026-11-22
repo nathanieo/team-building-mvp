@@ -33,7 +33,7 @@ function answersFor(levels: Record<TraitId, number>): Record<string, Questionnai
 const MIDDLE = { openness: 3, conscientiousness: 3, extraversion: 3, agreeableness: 3, neuroticism: 3 };
 
 describe("scoreTraits", () => {
-  it("scales the four statements per trait to 0–100, flipping reverse-worded ones", () => {
+  it("scales the six statements per trait to 0–100, flipping reverse-worded ones", () => {
     const traits = scoreTraits(answersFor({ ...MIDDLE, conscientiousness: 5, neuroticism: 1 }));
     // Shown as 95 and 5 rather than 100 and 0: a handful of statements can't justify an absolute.
     expect(traits?.find((trait) => trait.id === "conscientiousness")).toMatchObject({ score: 100, display: 95, band: "high" });
@@ -46,16 +46,16 @@ describe("scoreTraits", () => {
 
   it("rounds the displayed score to the nearest 5", () => {
     const answers = answersFor(MIDDLE);
-    answers["ws-01"] = 4; // one extraversion statement up a notch: 56/100
+    answers["ws-01"] = 4; // one extraversion statement up a notch: 54/100
     const extraversion = scoreTraits(answers)?.find((trait) => trait.id === "extraversion");
-    expect(extraversion).toMatchObject({ score: 56, display: 55 });
+    expect(extraversion).toMatchObject({ score: 54, display: 55 });
   });
 
   it("needs every statement answered", () => {
     const answers = answersFor(MIDDLE);
     delete answers["ws-07"];
     expect(scoreTraits(answers)).toBeNull();
-    expect(computePersonality(answers)).toEqual({ status: "incomplete", answered: 19, total: 20 });
+    expect(computePersonality(answers)).toEqual({ status: "incomplete", answered: 29, total: 30 });
     expect(computePersonality({})).toMatchObject({ status: "incomplete", answered: 0 });
   });
 });

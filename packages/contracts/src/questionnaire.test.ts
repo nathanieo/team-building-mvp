@@ -16,15 +16,15 @@ const projects = [
 ];
 
 describe("questionnaires", () => {
-  it("adds up to 30 questions for a class with projects", () => {
-    expect(buildWorkStyleQuestionnaire().questions.length + buildSkillsQuestionnaire(projects).questions.length).toBe(30);
+  it("adds up to 40 questions for a class with projects", () => {
+    expect(buildWorkStyleQuestionnaire().questions.length + buildSkillsQuestionnaire(projects).questions.length).toBe(40);
   });
 
-  it("has 20 work-style items, four per Big Five trait", () => {
-    expect(buildWorkStyleQuestionnaire().questions).toHaveLength(20);
+  it("has 30 work-style items, six per Big Five trait", () => {
+    expect(buildWorkStyleQuestionnaire().questions).toHaveLength(30);
     const perTrait = new Map<string, number>();
     for (const item of WORK_STYLE_ITEMS) perTrait.set(item.trait, (perTrait.get(item.trait) ?? 0) + 1);
-    expect([...perTrait.values()]).toEqual([4, 4, 4, 4, 4]);
+    expect([...perTrait.values()]).toEqual([6, 6, 6, 6, 6]);
   });
 
   it("adds the project ranking only when the class has projects", () => {
@@ -53,6 +53,6 @@ describe("questionnaires", () => {
     expect(countAnswered(work, answers)).toBe(3);
     expect(firstUnanswered(work, answers)).toBe(2);
     const all = Object.fromEntries(work.questions.map((question) => [question.id, 3]));
-    expect(firstUnanswered(work, all)).toBe(20);
+    expect(firstUnanswered(work, all)).toBe(30);
   });
 });

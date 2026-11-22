@@ -80,7 +80,7 @@ export function TraitBreakdown({ traits }: { traits: TraitScore[] }): ReactEleme
     <section className="persona-section" aria-labelledby="persona-traits">
       <h2 id="persona-traits">Your Big 5 breakdown</h2>
       <p className="persona-section__lead">
-        Each score comes from four of your answers and is rounded to the nearest 5. Treat them as a rough guide, not exact measurements.
+        Each score comes from six of your answers and is rounded to the nearest 5. Treat them as a rough guide, not exact measurements.
       </p>
       <ul className="trait-list">
         {traits.map((trait) => (

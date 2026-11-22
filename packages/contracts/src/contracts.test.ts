@@ -137,7 +137,7 @@ describe("studentStage", () => {
     name: "CS 665",
     term: null,
     questionnaires: [
-      { id: "work-style" as const, title: "Work style", minutes: 10, answered: 20, total: 20 },
+      { id: "work-style" as const, title: "Work style", minutes: 12, answered: 30, total: 30 },
       { id: "skills" as const, title: "Skills", minutes: 5, answered: 3, total: 8 },
     ],
     team: null,

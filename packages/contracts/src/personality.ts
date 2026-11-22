@@ -6,7 +6,7 @@
  * saved answers whenever it's shown. Wording and weights live in
  * personalityContent.ts.
  *
- * The scores come from 20 short statements (four per trait), so they are
+ * The scores come from 30 short statements (six per trait), so they are
  * lightweight indicators of working preferences, not psychological measurements.
  */
 import {

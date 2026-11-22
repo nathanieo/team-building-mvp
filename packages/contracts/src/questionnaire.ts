@@ -60,8 +60,9 @@ export const SKILL_LABELS = ["None yet", "Beginner", "Comfortable", "Strong", "E
 export type BigFiveTrait = "extraversion" | "agreeableness" | "conscientiousness" | "neuroticism" | "intellect";
 
 /**
- * The Mini-IPIP (Donnellan et al., 2006): 20 public-domain IPIP items, four per
- * Big Five trait. `reverse` items are scored 6 − answer when traits are worked out.
+ * 30 public-domain IPIP items, six per Big Five trait: the 20-item Mini-IPIP
+ * (Donnellan et al., 2006) plus ten more IPIP Big Five markers. `reverse`
+ * items are scored 6 − answer when traits are worked out.
  */
 export const WORK_STYLE_ITEMS: ReadonlyArray<{ id: string; text: string; trait: BigFiveTrait; reverse: boolean }> = [
   { id: "ws-01", text: "I am the life of the party.", trait: "extraversion", reverse: false },
@@ -84,6 +85,17 @@ export const WORK_STYLE_ITEMS: ReadonlyArray<{ id: string; text: string; trait: 
   { id: "ws-18", text: "I make a mess of things.", trait: "conscientiousness", reverse: true },
   { id: "ws-19", text: "I seldom feel blue.", trait: "neuroticism", reverse: true },
   { id: "ws-20", text: "I do not have a good imagination.", trait: "intellect", reverse: true },
+  // Ten more public-domain IPIP Big Five markers, two per trait, for six statements per trait.
+  { id: "ws-21", text: "I start conversations.", trait: "extraversion", reverse: false },
+  { id: "ws-22", text: "I make people feel at ease.", trait: "agreeableness", reverse: false },
+  { id: "ws-23", text: "I am always prepared.", trait: "conscientiousness", reverse: false },
+  { id: "ws-24", text: "I get stressed out easily.", trait: "neuroticism", reverse: false },
+  { id: "ws-25", text: "I am full of ideas.", trait: "intellect", reverse: false },
+  { id: "ws-26", text: "I don't like to draw attention to myself.", trait: "extraversion", reverse: true },
+  { id: "ws-27", text: "I take time out for others.", trait: "agreeableness", reverse: false },
+  { id: "ws-28", text: "I leave my belongings around.", trait: "conscientiousness", reverse: true },
+  { id: "ws-29", text: "I worry about things.", trait: "neuroticism", reverse: false },
+  { id: "ws-30", text: "I spend time reflecting on things.", trait: "intellect", reverse: false },
 ];
 
 /** Skills students rate themselves on, used to spread skills across teams. */
@@ -105,7 +117,7 @@ export function buildWorkStyleQuestionnaire(): Questionnaire {
   return {
     id: "work-style",
     title: "Work style",
-    minutes: 10,
+    minutes: 12,
     questions: WORK_STYLE_ITEMS.map((item) => ({
       id: item.id,
       kind: "scale",
