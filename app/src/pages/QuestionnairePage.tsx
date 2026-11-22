@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { countAnswered, firstUnanswered, isValidAnswer } from "@team-building-mvp/contracts";
+import { firstUnanswered, isValidAnswer } from "@team-building-mvp/contracts";
 import type {
   QuestionnaireAnswer,
   QuestionnaireId,
@@ -293,8 +293,9 @@ function QuestionnairePage(): ReactElement {
   }
 
   const visual = question ? visualFor(question.id) : DONE_VISUAL;
-  const answeredCount = countAnswered(questionnaire, answers);
-  const percent = Math.round((answeredCount / Math.max(1, total)) * 100);
+  // The bar follows where the student is (moving with every question, back or forward)
+  // and is full on the finish screen.
+  const percent = done ? 100 : Math.round((index / Math.max(1, total)) * 100);
   const currentAnswer = question ? answers[question.id] : undefined;
 
   return (
