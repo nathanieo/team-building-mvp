@@ -1016,35 +1016,157 @@ select {
 
 /* ---------- Personality profile (/student/CODE/personality) ---------- */
 
+/* A short run of pages. Each page has its own soft colour, which fades as you move on. */
 .persona-page {
+  --persona-bg: #e3f5ea;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   min-height: 100dvh;
-  background: linear-gradient(180deg, #e3f5ea 0, #f5f8f6 560px);
+  background-color: var(--persona-bg);
+  transition: background-color 600ms ease;
+}
+
+.persona-page[data-tone="sky"] {
+  --persona-bg: #e3f1ff;
+}
+
+.persona-page[data-tone="lilac"] {
+  --persona-bg: #efeaff;
+}
+
+.persona-page[data-tone="sun"] {
+  --persona-bg: #fff6d6;
+}
+
+.persona-page[data-tone="peach"] {
+  --persona-bg: #ffeede;
+}
+
+.persona-page[data-tone="pink"] {
+  --persona-bg: #ffe9f0;
 }
 
 .persona-bar {
-  padding: 16px clamp(16px, 4vw, 40px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px clamp(16px, 4vw, 40px) 10px;
+}
+
+.persona-bar__count {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Story-style progress: one segment per page, filled up to the current one. Each is a button. */
+.persona-steps {
+  display: flex;
+  gap: 6px;
+  margin: 0 clamp(16px, 4vw, 40px);
+}
+
+.persona-steps__segment {
+  position: relative;
+  flex: 1;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.persona-steps__segment::before,
+.persona-steps__segment::after {
+  content: "";
+  position: absolute;
+  inset: 8px 0;
+  border-radius: 999px;
+}
+
+.persona-steps__segment::before {
+  background: rgba(21, 43, 38, 0.1);
+}
+
+.persona-steps__segment::after {
+  background: var(--color-brand);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 420ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.persona-steps__segment--done::after {
+  transform: scaleX(1);
+}
+
+.persona-steps__segment:hover::before {
+  background: rgba(21, 43, 38, 0.18);
 }
 
 .persona-main {
-  display: grid;
-  gap: 44px;
-  width: min(760px, calc(100% - 32px));
+  flex: 1;
+  width: min(620px, calc(100% - 32px));
   margin: 0 auto;
-  padding-bottom: 72px;
+  padding: clamp(16px, 4vh, 36px) 0 32px;
+  touch-action: pan-y;
 }
 
-/* Section A: the reveal. Mascot pops in, then the name, tagline and details rise in turn. */
-.persona-reveal {
+/* Page changes: the old page slides away, the new one slides in from the side you're heading to. */
+.persona-slide {
   display: grid;
-  justify-items: center;
-  gap: 10px;
-  text-align: center;
+  gap: 18px;
 }
 
-.persona-reveal__mascot {
-  width: min(240px, 62vw);
-  animation: persona-pop 700ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+.persona-slide--in.persona-slide--next {
+  animation: slide-in-next 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.persona-slide--in.persona-slide--back {
+  animation: slide-in-back 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.persona-slide--out.persona-slide--next {
+  animation: slide-out-next 200ms ease-in both;
+}
+
+.persona-slide--out.persona-slide--back {
+  animation: slide-out-back 200ms ease-in both;
+}
+
+/* Inside a page, its pieces rise in one after another. */
+.persona-slide--in .stagger {
+  animation: persona-rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(140ms + var(--i, 0) * 90ms);
+}
+
+.slide-head {
+  display: grid;
+  gap: 6px;
+}
+
+.slide-head h2 {
+  color: var(--color-heading);
+  font-size: clamp(1.5rem, 4.5vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.slide-head h2:focus,
+.persona-reveal__name:focus {
+  outline: none;
+}
+
+.slide-head__lead {
+  color: var(--color-text-muted);
+  font-size: 0.98rem;
+}
+
+.slide-foot {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  text-align: center;
 }
 
 .persona-kicker {
@@ -1055,25 +1177,97 @@ select {
   text-transform: uppercase;
 }
 
+.persona-label {
+  display: inline-block;
+  margin-right: 6px;
+  color: var(--color-brand);
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Bottom bar: Back and Next stay within reach on every page. */
+.persona-nav {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: min(620px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 14px 0 max(18px, env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, transparent 0, var(--persona-bg) 18px);
+  transition: background 600ms ease;
+}
+
+.persona-nav__next {
+  margin-left: auto;
+}
+
+.persona-nav__end {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-left: auto;
+}
+
+/* Page 1: the reveal. Sprout pops in on a glowing halo, then the name and details rise in turn. */
+.persona-reveal {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.persona-reveal__mascot {
+  position: relative;
+  width: min(220px, 58vw);
+  animation: persona-pop 700ms cubic-bezier(0.2, 0.9, 0.3, 1.25) 120ms both;
+}
+
+.persona-reveal__mascot > :not(.persona-reveal__halo) {
+  position: relative;
+}
+
+.persona-reveal__halo {
+  position: absolute;
+  inset: 4% 4% 10%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0, rgba(255, 255, 255, 0) 70%);
+  animation: persona-halo 3.2s ease-in-out 800ms infinite;
+}
+
+.persona-reveal__halo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 3px solid rgba(35, 107, 91, 0.35);
+  border-radius: 50%;
+  animation: persona-ring 1.1s ease-out 300ms both;
+}
+
 .persona-reveal > .persona-kicker {
-  animation: persona-rise 500ms ease 200ms both;
+  animation: persona-rise 500ms ease 380ms both;
 }
 
 .persona-reveal__name {
   color: var(--color-brand-dark);
-  font-size: clamp(2.2rem, 7vw, 3.4rem);
+  font-size: clamp(2.4rem, 8vw, 3.4rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.05;
-  animation: persona-rise 600ms ease 280ms both;
+  animation: persona-name 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2) 460ms both;
 }
 
 .persona-reveal__tagline {
-  max-width: 34ch;
+  max-width: 30ch;
   color: var(--color-heading);
-  font-size: clamp(1.05rem, 2.6vw, 1.25rem);
+  font-size: clamp(1.05rem, 2.6vw, 1.2rem);
   font-weight: 600;
-  animation: persona-rise 600ms ease 400ms both;
+  animation: persona-rise 600ms ease 640ms both;
 }
 
 .persona-reveal__meta {
@@ -1082,7 +1276,7 @@ select {
   justify-content: center;
   gap: 8px;
   margin-top: 4px;
-  animation: persona-rise 600ms ease 520ms both;
+  animation: persona-rise 600ms ease 780ms both;
 }
 
 .match-pill,
@@ -1114,75 +1308,139 @@ select {
 }
 
 .persona-reveal__intro {
-  max-width: 56ch;
+  max-width: 46ch;
   margin-top: 6px;
-  font-size: 1.02rem;
-  line-height: 1.65;
-  animation: persona-rise 600ms ease 640ms both;
-}
-
-.persona-note {
-  margin-top: -24px;
-  padding: 12px 16px;
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
   color: var(--color-text-muted);
-  background: rgba(255, 255, 255, 0.75);
-  font-size: 0.88rem;
-  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  animation: persona-rise 600ms ease 920ms both;
 }
 
-.persona-section {
+/* Tap-to-open cards: a headline up front, details underneath. */
+.card-stack {
   display: grid;
+  gap: 12px;
+}
+
+.card-stack--tight {
+  gap: 8px;
+}
+
+.more-card,
+.why-card,
+.compat,
+.balance {
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 2px rgba(21, 43, 38, 0.05), 0 8px 24px rgba(21, 43, 38, 0.06);
+}
+
+.more-card summary,
+.compat__more summary {
+  display: flex;
+  align-items: center;
   gap: 14px;
+  list-style: none;
+  cursor: pointer;
 }
 
-.persona-section h2 {
-  font-size: clamp(1.3rem, 3vw, 1.6rem);
+.more-card summary {
+  padding: 16px 18px;
 }
 
-.persona-section__lead {
-  margin-top: -6px;
-  color: var(--color-text-muted);
-  font-size: 0.92rem;
+.more-card summary::-webkit-details-marker,
+.compat__more summary::-webkit-details-marker {
+  display: none;
 }
 
-.persona-label {
-  display: inline-block;
-  margin-right: 6px;
-  color: var(--color-brand);
-  font-size: 0.72rem;
-  font-weight: 750;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-/* Section B: why you got this personality. */
-.persona-insights,
-.trait-list,
-.blindspot-list,
-.ideal-list,
-.balance__list {
+.more-card__summary {
   display: grid;
+  flex: 1;
+  gap: 4px;
+  min-width: 0;
+}
+
+.more-card__summary > strong {
+  color: var(--color-heading);
+  font-size: 1.02rem;
+}
+
+.more-card__summary > span:not(.trait-row) {
+  color: var(--color-text-muted);
+  font-size: 0.93rem;
+}
+
+/* A plus that turns into a minus when the card is open. */
+.more-card__toggle {
+  position: relative;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-brand-soft);
+  transition: transform 260ms ease, background-color 200ms ease;
+}
+
+.more-card__toggle::before,
+.more-card__toggle::after {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: 8px;
+  width: 12px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-brand-dark);
+  transition: transform 260ms ease;
+}
+
+.more-card__toggle::after {
+  transform: rotate(90deg);
+}
+
+details[open] > summary .more-card__toggle {
+  transform: rotate(180deg);
+}
+
+details[open] > summary .more-card__toggle::after {
+  transform: rotate(0deg);
+}
+
+.more-card summary:hover .more-card__toggle,
+.compat__more summary:hover .more-card__toggle {
+  background: #c8e6da;
+}
+
+.more-card__body {
+  display: grid;
+  gap: 8px;
+  font-size: 0.94rem;
+}
+
+.more-card > .more-card__body {
+  padding: 0 18px 16px;
+}
+
+details[open] > .more-card__body {
+  animation: persona-open 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Page 2: why. */
+.why-list {
+  display: grid;
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.persona-insight {
+.why-card {
   display: flex;
   gap: 14px;
-  padding: 16px 0;
-  border-top: 1px solid var(--color-border);
+  padding: 16px 18px;
 }
 
-.persona-insight:first-child,
-.blindspot:first-child {
-  border-top: 0;
-  padding-top: 4px;
-}
-
-.persona-insight__number {
+.why-card__number {
   display: grid;
   flex: none;
   width: 32px;
@@ -1195,25 +1453,17 @@ select {
   font-weight: 750;
 }
 
-.persona-insight h3 {
-  margin-bottom: 2px;
+.why-card h3 {
+  margin-bottom: 4px;
   font-size: 1.05rem;
 }
 
-.persona-insight__evidence {
-  margin-top: 6px;
-  padding-left: 10px;
-  border-left: 3px solid var(--color-brand-soft);
+.why-card p {
   color: var(--color-text-muted);
-  font-size: 0.88rem;
-  font-style: italic;
+  font-size: 0.9rem;
 }
 
-/* Section C: Big 5 breakdown. */
-.trait-list {
-  gap: 20px;
-}
-
+/* Page 3: Big 5. */
 .trait-row {
   display: grid;
   gap: 8px;
@@ -1221,13 +1471,13 @@ select {
 
 .trait-row__head {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
 }
 
-.trait-row__head h3 {
-  font-size: 1rem;
+.trait-row__name {
+  color: var(--color-heading);
+  font-weight: 700;
 }
 
 .trait-band {
@@ -1246,16 +1496,13 @@ select {
 
 .trait-row__score {
   margin-left: auto;
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
-}
-
-.trait-row__score strong {
   color: var(--color-heading);
-  font-size: 1.05rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
 }
 
 .trait-bar {
+  display: block;
   height: 10px;
   border-radius: 999px;
   background: #e6eeea;
@@ -1263,134 +1510,44 @@ select {
 }
 
 .trait-bar__fill {
+  display: block;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #8fd04f 0%, var(--color-brand) 100%);
   transform-origin: left;
-  animation: persona-grow 900ms ease 200ms both;
 }
 
-.trait-row p {
-  font-size: 0.94rem;
+.persona-slide--in .trait-bar__fill {
+  animation: persona-grow 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(360ms + var(--i, 0) * 110ms);
 }
 
-/* Section D: strengths. */
-.strength-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
-  gap: 12px;
-}
-
-.strength-tile {
-  display: grid;
-  align-content: start;
-  gap: 8px;
-  padding: 18px;
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  background: var(--color-surface);
-}
-
-.strength-tile h3 {
-  color: var(--color-brand-dark);
-  font-size: 1.02rem;
-}
-
-.strength-tile p {
-  font-size: 0.92rem;
-}
-
-.strength-tile__example {
-  color: var(--color-text-muted);
-}
-
-/* Section E: blind spots. */
-.blindspot {
-  display: grid;
-  gap: 6px;
-  padding: 16px 0;
-  border-top: 1px solid var(--color-border);
-}
-
-.blindspot h3 {
-  font-size: 1.02rem;
-}
-
-.blindspot__tip {
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: #f1f7f4;
-  font-size: 0.92rem;
-}
-
-/* Section F: team role. */
-.team-role__title {
-  margin-top: -4px;
-  color: var(--color-brand-dark);
-  font-size: 1.15rem;
-  font-weight: 750;
-}
-
-.team-role__lead {
-  font-size: 1.02rem;
-  line-height: 1.6;
-}
-
-.team-role__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
-  gap: 14px 24px;
-  margin: 6px 0 0;
-}
-
-.team-role__grid div {
-  padding-top: 12px;
-  border-top: 1px solid var(--color-border);
-}
-
-.team-role__grid dt {
-  color: var(--color-brand);
-  font-size: 0.75rem;
-  font-weight: 750;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.team-role__grid dd {
-  margin: 4px 0 0;
-  font-size: 0.94rem;
-}
-
-/* Section G: who you work best with. */
+/* Page 7: good matches. */
 .compat-list {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .compat {
   display: grid;
-  gap: 8px;
-  padding: 20px;
-  border-radius: 18px;
-  background: var(--color-surface);
-  box-shadow: 0 1px 2px rgba(21, 43, 38, 0.06), 0 10px 30px rgba(21, 43, 38, 0.07);
+  gap: 10px;
+  padding: 18px;
 }
 
 .compat__head {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 4px;
 }
 
 .compat__mascot {
   flex: none;
-  width: 96px;
+  width: 84px;
 }
 
 .compat__head h3 {
   color: var(--color-brand-dark);
-  font-size: 1.3rem;
+  font-size: 1.25rem;
 }
 
 .compat__identity {
@@ -1398,46 +1555,53 @@ select {
   font-size: 0.9rem;
 }
 
-.compat h4 {
-  margin-top: 6px;
+.compat__brings {
   color: var(--color-brand);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 750;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.compat p,
-.compat li {
-  font-size: 0.94rem;
+.compat__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -4px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
-.compat__columns {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
-  gap: 12px;
-}
-
-.compat__columns ul {
-  margin: 4px 0 0;
-  padding-left: 18px;
-}
-
-.compat__tip {
-  margin-top: 8px;
-  padding: 12px 14px;
-  border-radius: 12px;
+.compat__chips li {
+  padding: 5px 11px;
+  border-radius: 999px;
   color: var(--color-brand-dark);
   background: var(--color-brand-soft);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
-/* Section H: ideal team. */
+.compat__more {
+  border-top: 1px solid var(--color-border);
+}
+
+.compat__more summary {
+  justify-content: space-between;
+  padding-top: 12px;
+  color: var(--color-brand-dark);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.compat__more > .more-card__body {
+  padding-top: 10px;
+}
+
+/* Page 8: ideal team. */
 .balance {
   display: grid;
   gap: 10px;
   padding: 16px 18px;
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  background: var(--color-surface);
 }
 
 .balance__legend {
@@ -1458,6 +1622,14 @@ select {
   width: 12px;
   height: 12px;
   border-radius: 4px;
+}
+
+.balance__list,
+.ideal-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .balance__list {
@@ -1489,6 +1661,12 @@ select {
   background: #e6eeea;
 }
 
+.persona-slide--in .balance__dot--you,
+.persona-slide--in .balance__dot--team {
+  animation: persona-dot 360ms cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+  animation-delay: calc(420ms + var(--d, 0) * 35ms);
+}
+
 .balance__swatch--you,
 .balance__dot--you {
   background: var(--color-brand);
@@ -1499,17 +1677,19 @@ select {
   background: #a9dcbc;
 }
 
+.ideal-list {
+  gap: 10px;
+}
+
 .ideal-item {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 12px 0;
-  border-top: 1px solid var(--color-border);
 }
 
 .ideal-item__mascot {
   flex: none;
-  width: 72px;
+  width: 64px;
 }
 
 .ideal-item h3 {
@@ -1517,20 +1697,8 @@ select {
 }
 
 .ideal-item p {
-  font-size: 0.92rem;
-}
-
-.persona-footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-}
-
-.persona-footer__review {
-  color: var(--color-brand);
-  font-size: 0.92rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
 }
 
 .persona-incomplete {
@@ -1584,16 +1752,84 @@ select {
   }
 }
 
+@keyframes persona-name {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
 @keyframes persona-rise {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(14px);
+  }
+}
+
+@keyframes persona-open {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
   }
 }
 
 @keyframes persona-grow {
   from {
     transform: scaleX(0);
+  }
+}
+
+@keyframes persona-dot {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+@keyframes persona-halo {
+  50% {
+    transform: scale(1.06);
+    opacity: 0.75;
+  }
+}
+
+@keyframes persona-ring {
+  from {
+    opacity: 1;
+    transform: scale(0.7);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+@keyframes slide-in-next {
+  from {
+    opacity: 0;
+    transform: translateX(48px);
+  }
+}
+
+@keyframes slide-in-back {
+  from {
+    opacity: 0;
+    transform: translateX(-48px);
+  }
+}
+
+@keyframes slide-out-next {
+  to {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+}
+
+@keyframes slide-out-back {
+  to {
+    opacity: 0;
+    transform: translateX(40px);
   }
 }
 

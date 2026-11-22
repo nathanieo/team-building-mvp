@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
-import type { ReactElement } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { PointerEvent, ReactElement } from "react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { ARCHETYPES, computePersonality } from "@team-building-mvp/contracts";
 import type { PersonalityResult, QuestionnaireAnswer } from "@team-building-mvp/contracts";
 import { AuthLayout } from "../components/AuthLayout";
 import {
   BlindSpotList,
-  CompatibilityCard,
+  CompatibilitySection,
   IdealTeamSection,
   PersonalityReveal,
   StrengthList,
@@ -20,6 +20,174 @@ type LoadState =
   | { status: "loading" }
   | { status: "error"; message: string }
   | { status: "ready"; answers: Record<string, QuestionnaireAnswer> };
+
+type CompleteResult = Extract<PersonalityResult, { status: "complete" }>;
+
+/** The profile's pages, in order. Each has its own soft background colour. */
+const SLIDES = [
+  { id: "you", label: "You", tone: "mint" },
+  { id: "why", label: "Why", tone: "sky" },
+  { id: "traits", label: "Big 5", tone: "lilac" },
+  { id: "strengths", label: "Strengths", tone: "sun" },
+  { id: "blind-spots", label: "Blind spots", tone: "peach" },
+  { id: "team", label: "In a team", tone: "mint" },
+  { id: "matches", label: "Good matches", tone: "pink" },
+  { id: "ideal", label: "Ideal team", tone: "sky" },
+] as const;
+
+/** How long the old page takes to slide away before the next one comes in. */
+const LEAVE_MS = 200;
+const SWIPE_PX = 60;
+
+function slideFromParam(value: string | null): number {
+  const index = Number(value) - 1;
+  return Number.isInteger(index) && index >= 0 && index < SLIDES.length ? index : 0;
+}
+
+/**
+ * The profile as a short run of pages, like a story: one idea per page with
+ * the details a tap away. Next/Back, the arrow keys, swiping and the
+ * progress segments all move between pages; ?page= keeps the place.
+ */
+function ProfileSlides({ code, result }: { code: string; result: CompleteResult }): ReactElement {
+  const [params, setParams] = useSearchParams();
+  const [index, setIndex] = useState(() => slideFromParam(params.get("page")));
+  const [phase, setPhase] = useState<"in" | "out">("in");
+  const [direction, setDirection] = useState<"next" | "back">("next");
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const moved = useRef(false);
+  const timer = useRef<number | undefined>(undefined);
+  const swipe = useRef<{ x: number; y: number } | null>(null);
+  const last = SLIDES.length - 1;
+  const slide = SLIDES[index] ?? SLIDES[0];
+
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  // After a page change, start at the top and move focus to the new heading.
+  useEffect(() => {
+    if (!moved.current) return;
+    window.scrollTo({ top: 0 });
+    headingRef.current?.focus({ preventScroll: true });
+  }, [index]);
+
+  const goTo = useCallback(
+    (next: number) => {
+      if (next < 0 || next > last || next === index || phase === "out") return;
+      setDirection(next > index ? "next" : "back");
+      const show = (): void => {
+        moved.current = true;
+        setIndex(next);
+        setPhase("in");
+        setParams(next === 0 ? {} : { page: String(next + 1) }, { replace: true });
+      };
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        show();
+        return;
+      }
+      setPhase("out");
+      window.clearTimeout(timer.current);
+      timer.current = window.setTimeout(show, LEAVE_MS);
+    },
+    [index, last, phase, setParams],
+  );
+
+  useEffect(() => {
+    function handleKey(event: KeyboardEvent): void {
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      if (event.key === "ArrowRight") goTo(index + 1);
+      if (event.key === "ArrowLeft") goTo(index - 1);
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [goTo, index]);
+
+  function handlePointerDown(event: PointerEvent<HTMLElement>): void {
+    swipe.current = event.pointerType === "mouse" ? null : { x: event.clientX, y: event.clientY };
+  }
+
+  function handlePointerUp(event: PointerEvent<HTMLElement>): void {
+    const start = swipe.current;
+    swipe.current = null;
+    if (!start) return;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (Math.abs(dx) < SWIPE_PX || Math.abs(dy) > Math.abs(dx)) return;
+    goTo(dx < 0 ? index + 1 : index - 1);
+  }
+
+  const archetype = ARCHETYPES[result.primary];
+  const ref = headingRef;
+  const pages: Record<(typeof SLIDES)[number]["id"], ReactElement> = {
+    you: <PersonalityReveal primary={result.primary} secondary={result.secondary} match={result.match} intro={result.intro} headingRef={ref} />,
+    why: <WhyInsights archetypeName={archetype.name} insights={result.insights} headingRef={ref} />,
+    traits: <TraitBreakdown traits={result.traits} total={result.total} headingRef={ref} />,
+    strengths: <StrengthList strengths={result.strengths} headingRef={ref} />,
+    "blind-spots": <BlindSpotList blindSpots={result.blindSpots} headingRef={ref} />,
+    team: <TeamRoleSection role={result.team} headingRef={ref} />,
+    matches: <CompatibilitySection matches={result.compatibility} headingRef={ref} />,
+    ideal: <IdealTeamSection team={result.idealTeam} headingRef={ref} />,
+  };
+
+  return (
+    <div className="persona-page" data-tone={slide.tone}>
+      <header className="persona-bar">
+        <Link to={`/student/${code}`} className="quiz-back">
+          ← My page
+        </Link>
+        <span className="persona-bar__count">
+          {index + 1} of {SLIDES.length}
+        </span>
+      </header>
+
+      <nav className="persona-steps" aria-label="Profile pages">
+        {SLIDES.map((item, position) => (
+          <button
+            key={item.id}
+            type="button"
+            className={`persona-steps__segment${position <= index ? " persona-steps__segment--done" : ""}`}
+            aria-label={`Page ${position + 1}: ${item.label}`}
+            aria-current={position === index ? "step" : undefined}
+            onClick={() => goTo(position)}
+          />
+        ))}
+      </nav>
+
+      <main className="persona-main" onPointerDown={handlePointerDown} onPointerUp={handlePointerUp}>
+        <section
+          key={slide.id}
+          className={`persona-slide persona-slide--${phase} persona-slide--${direction}`}
+          aria-label={`${slide.label}, page ${index + 1} of ${SLIDES.length}`}
+        >
+          {pages[slide.id]}
+        </section>
+      </main>
+
+      <footer className="persona-nav">
+        {index > 0 ? (
+          <button type="button" className="button button--ghost persona-nav__back" onClick={() => goTo(index - 1)}>
+            Back
+          </button>
+        ) : (
+          <span />
+        )}
+        {index < last ? (
+          <button type="button" className="button button--primary persona-nav__next" onClick={() => goTo(index + 1)}>
+            {index === 0 ? "See why" : `Next: ${SLIDES[index + 1]?.label ?? ""}`}
+          </button>
+        ) : (
+          <div className="persona-nav__end">
+            <Link to={`/student/${code}/questionnaire/work-style`} className="link-button">
+              Review answers
+            </Link>
+            <Link to={`/student/${code}`} className="button button--primary">
+              Done
+            </Link>
+          </div>
+        )}
+      </footer>
+    </div>
+  );
+}
 
 /**
  * A student's personality profile (/student/CODE/personality). It's worked out
@@ -96,55 +264,7 @@ function PersonalityPage(): ReactElement {
     );
   }
 
-  const archetype = ARCHETYPES[result.primary];
-
-  return (
-    <div className="persona-page">
-      <header className="persona-bar">
-        <Link to={`/student/${code}`} className="quiz-back">
-          ← My page
-        </Link>
-      </header>
-
-      <main className="persona-main">
-        <PersonalityReveal primary={result.primary} secondary={result.secondary} match={result.match} intro={result.intro} />
-
-        <p className="persona-note">
-          Based on your {result.total} Work style answers. This is a lightweight snapshot of how you like to work, not a diagnosis
-          or a fixed label, and every type brings something valuable to a team.
-        </p>
-
-        <WhyInsights archetypeName={archetype.name} insights={result.insights} />
-        <TraitBreakdown traits={result.traits} />
-        <StrengthList strengths={result.strengths} />
-        <BlindSpotList blindSpots={result.blindSpots} />
-        <TeamRoleSection role={result.team} />
-
-        <section className="persona-section" aria-labelledby="persona-compat">
-          <h2 id="persona-compat">Who you work best with</h2>
-          <p className="persona-section__lead">
-            Complementary work styles, not a promise: anyone can work well together with a little understanding.
-          </p>
-          <div className="compat-list">
-            {result.compatibility.map((match) => (
-              <CompatibilityCard key={match.id} match={match} />
-            ))}
-          </div>
-        </section>
-
-        <IdealTeamSection team={result.idealTeam} />
-
-        <footer className="persona-footer">
-          <Link to={`/student/${code}`} className="button button--primary">
-            Back to my page
-          </Link>
-          <Link to={`/student/${code}/questionnaire/work-style`} className="link-button persona-footer__review">
-            Review my answers
-          </Link>
-        </footer>
-      </main>
-    </div>
-  );
+  return <ProfileSlides code={code} result={result} />;
 }
 
 export default PersonalityPage;
