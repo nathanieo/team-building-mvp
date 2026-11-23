@@ -24,10 +24,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     try {
       await this.$connect();
       await this.$queryRaw`SELECT 1 FROM "facilitators" LIMIT 1`;
-    } catch {
+    } catch (caught) {
       await this.$disconnect();
+      // The driver's reason (no credentials in it) says whether it's the connection or missing tables.
+      const reason = caught instanceof Error ? caught.message.split("\n").at(-1) : String(caught);
       throw new Error(
-        "Database initialization failed. Start PostgreSQL (npm run db:up) and run npm run db:migrate.",
+        `Database initialization failed (${reason}). Start PostgreSQL (npm run db:up) and run npm run db:migrate.`,
+        { cause: caught },
       );
     }
   }
