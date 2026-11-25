@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ReactElement } from "react";
 import type { CohortSummary, Facilitator } from "@team-building-mvp/contracts";
 import { useAuth } from "../auth/useAuth";
-import { BrandLogo } from "../components/BrandLogo";
+import { BrandLogo, BrandName } from "../components/BrandLogo";
 import { ClassCard } from "../components/ClassCard";
 import { ClassPanel } from "../components/ClassPanel";
 import { CreateClassDialog } from "../components/CreateClassDialog";
@@ -69,8 +69,8 @@ function DashboardPage({ facilitator }: { facilitator: Facilitator }): ReactElem
         <TeamDots contained />
         <header className="dash-bar">
           <div className="auth-brand dash-bar__brand">
-            <BrandLogo className="brand-logo" size={36} variant="frosted" />
-            Team Building
+            <BrandLogo className="brand-logo" size={36} />
+            <BrandName />
           </div>
           <div className="dash-bar__account">
             <span className="dash-bar__name">{facilitator.displayName}</span>

@@ -318,6 +318,17 @@ select {
   letter-spacing: -0.01em;
 }
 
+/* The name as on the poster: Montserrat, "Co" in yellow. */
+.brand-name {
+  font-family: Montserrat, var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.brand-name__co {
+  color: #f2c037;
+}
+
 .auth-brand .brand-logo {
   border-radius: 24%;
   backdrop-filter: blur(6px);
@@ -403,7 +414,7 @@ select {
   flex: none;
 }
 
-/* "Not with us? Join Team Building": the highlighted words flip to white-on-black when clicked. */
+/* "Not with us? Join CoCongruo": the highlighted words flip to white-on-black when clicked. */
 .auth-switch {
   color: var(--color-text-muted);
   font-size: 0.92rem;

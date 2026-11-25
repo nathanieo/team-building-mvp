@@ -22,7 +22,7 @@ const EMPTY: FormValues = { displayName: "", username: "", email: "", password: 
  */
 const INVITE_ONLY_MESSAGE = "Sign-ups are invite-only on this site right now. Ask your administrator for access.";
 
-/** Facilitator sign-up, reached from "Join Team Building" on the log-in page. */
+/** Facilitator sign-up, reached from "Join CoCongruo" on the log-in page. */
 function SignupPage(): ReactElement {
   const { state, register } = useAuth();
   const navigate = useNavigate();

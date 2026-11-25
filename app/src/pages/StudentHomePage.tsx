@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { studentStage, validateStudentLoginRequest } from "@team-building-mvp/contracts";
 import type { StudentClassView, StudentHomeResponse, StudentStage } from "@team-building-mvp/contracts";
 import { AuthLayout, AuthSwitch } from "../components/AuthLayout";
-import { BrandLogo } from "../components/BrandLogo";
+import { BrandLogo, BrandName } from "../components/BrandLogo";
 import { Mascot } from "../components/Mascot";
 import { QuestionnairesStage, TeamStage, WaitingStage } from "../components/StudentStages";
 import { TeamDots } from "../components/TeamDots";
@@ -286,8 +286,8 @@ function StudentHomePage(): ReactElement {
         <TeamDots contained />
         <header className="dash-bar">
           <div className="auth-brand dash-bar__brand">
-            <BrandLogo className="brand-logo" size={36} variant="frosted" />
-            Team Building
+            <BrandLogo className="brand-logo" size={36} />
+            <BrandName />
           </div>
           <div className="dash-bar__account">
             <span className="dash-bar__name">{student.displayName}</span>

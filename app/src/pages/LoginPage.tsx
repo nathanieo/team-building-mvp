@@ -168,7 +168,7 @@ function LoginPage(): ReactElement {
           </div>
         ) : null}
 
-        <AuthSwitch prompt="Not with us?" lead="Join" highlight="Team Building" to="/signup" />
+        <AuthSwitch prompt="Not with us?" lead="Join" highlight="CoCongruo" to="/signup" />
       </AuthLayout>
     </>
   );
