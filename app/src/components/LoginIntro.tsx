@@ -8,7 +8,7 @@ const FADE_MS = 450;
 
 const TEAMS = [
   { x: 70, fill: "#dde9f7", dot: "#3d6fa8" },
-  { x: 180, fill: "#dceee8", dot: "#236b5b" },
+  { x: 180, fill: "#fff3b0", dot: "#000000" },
   { x: 290, fill: "#fbe3ec", dot: "#b04a76" },
 ] as const;
 

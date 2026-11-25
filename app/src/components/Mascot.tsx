@@ -2,10 +2,11 @@ import { useId } from "react";
 import type { ReactElement, ReactNode } from "react";
 
 /**
- * "Sprout", the questionnaire buddy: a soft green dome with two leaves,
- * sitting in a mound of soil (an original drawing in the style the team chose).
- * Each question gives it a face, a prop and a movement; its leaves perk up or
- * droop with its mood, and it hops when the student answers.
+ * The questionnaire buddy: a Shocker Yellow wheat kernel topped with an ear of
+ * wheat, sitting in a mound of soil (an original drawing in Wichita State's
+ * yellow and black, not the WuShock mascot). Each question gives it a face, a
+ * prop and a movement; its wheat ear stands tall or droops with its mood, and
+ * it hops when the student answers.
  */
 export type MascotMood = "happy" | "excited" | "calm" | "worried" | "thinking" | "shy" | "oops" | "focused" | "warm";
 
@@ -54,7 +55,7 @@ export interface MascotScene {
 }
 
 const INK = "#1b1f1d";
-const LEAF_DARK = "#5aa832";
+const GRAIN_DARK = "#9a6a00";
 const PINK = "#f4a0a0";
 const AMBER = "#f5b83d";
 const SKY = "#6fb6ff";
@@ -62,7 +63,7 @@ const VIOLET = "#a78bfa";
 const RED = "#ff6b6b";
 const GREEN = "#5ec26a";
 
-/* Face positions in the 240×190 scene: the sprout's dome is centred on x 120. */
+/* Face positions in the 240×190 scene: the kernel is centred on x 120. */
 const EYE_L = 107;
 const EYE_R = 133;
 const EYE_Y = 108;
@@ -139,25 +140,52 @@ function Mouth({ mood }: { mood: MascotMood }): ReactElement {
   }
 }
 
-/** Leaves act like arms: they perk up when excited and droop when worried. */
-function Leaves({ mood, ids }: { mood: MascotMood; ids: { leaf: string } }): ReactElement {
-  const tilt = mood === "excited" ? -14 : mood === "worried" || mood === "shy" ? 22 : 0;
+/** Grain rows on the ear, bottom to top (y of each pair's centre). */
+const GRAIN_ROWS = [44, 34, 24];
+
+/**
+ * An ear of wheat on a short stalk: pairs of grains with long awns, and one grain
+ * on top. Drawn around x 121 with its base at y 64; `fill` paints the grains.
+ */
+function WheatEar({ fill, awn = GRAIN_DARK }: { fill: string; awn?: string }): ReactElement {
   return (
-    <g className="mascot__leaves">
-      <path d="M120 66 C120 58 120 52 121 46" stroke={LEAF_DARK} strokeWidth="4" fill="none" strokeLinecap="round" />
-      <g transform={`rotate(${tilt} 121 46)`}>
-        <path d="M121 46 C108 28 86 30 82 39 C90 53 112 55 121 46 Z" fill={`url(#${ids.leaf})`} />
-        <path d="M120 46 C108 40 96 38 88 40" stroke={LEAF_DARK} strokeWidth="1.5" fill="none" opacity="0.5" />
+    <g>
+      <path d="M120 66 C120 60 121 56 121 50" stroke={awn} strokeWidth="3.5" fill="none" strokeLinecap="round" />
+      <path d="M121 52 V12" stroke={awn} strokeWidth="2" strokeLinecap="round" />
+      <g stroke={awn} strokeWidth="1.6" strokeLinecap="round" fill="none">
+        {GRAIN_ROWS.map((y) => (
+          <g key={y}>
+            <path d={`M111 ${y - 7} L102 ${y - 22}`} />
+            <path d={`M131 ${y - 7} L140 ${y - 22}`} />
+          </g>
+        ))}
+        <path d="M121 4 V-4" />
       </g>
-      <g transform={`rotate(${-tilt} 121 46)`}>
-        <path d="M121 46 C133 27 156 28 160 37 C152 52 131 55 121 46 Z" fill={`url(#${ids.leaf})`} />
-        <path d="M122 46 C134 39 146 37 154 38" stroke={LEAF_DARK} strokeWidth="1.5" fill="none" opacity="0.5" />
+      {GRAIN_ROWS.map((y) => (
+        <g key={y} fill={fill}>
+          <ellipse cx="115.5" cy={y} rx="5.2" ry="9" transform={`rotate(-30 115.5 ${y})`} />
+          <ellipse cx="126.5" cy={y} rx="5.2" ry="9" transform={`rotate(30 126.5 ${y})`} />
+        </g>
+      ))}
+      <ellipse cx="121" cy="13" rx="4.8" ry="8.6" fill={fill} />
+    </g>
+  );
+}
+
+/** The wheat ear acts like arms: it stands tall when excited and droops when worried. */
+function Ear({ mood, ids }: { mood: MascotMood; ids: { grain: string } }): ReactElement {
+  const tilt =
+    mood === "excited" ? 0 : mood === "worried" ? 30 : mood === "shy" ? -22 : mood === "thinking" ? 14 : 6;
+  return (
+    <g className="mascot__ear">
+      <g transform={`rotate(${tilt} 121 64) translate(121 64) scale(1.3) translate(-121 -64)`}>
+        <WheatEar fill={`url(#${ids.grain})`} />
       </g>
     </g>
   );
 }
 
-/** The prop or scene around the sprout. */
+/** The prop or scene around the mascot. */
 function Prop({ prop }: { prop: MascotProp }): ReactElement | null {
   switch (prop) {
     case "party":
@@ -175,7 +203,7 @@ function Prop({ prop }: { prop: MascotProp }): ReactElement | null {
     case "music":
       return <MusicNotes />;
     case "friends":
-      return <FriendSprout />;
+      return <FriendWheat />;
     case "confetti":
       return <Confetti />;
     case "heart":
@@ -437,7 +465,7 @@ function Prop({ prop }: { prop: MascotProp }): ReactElement | null {
   }
 }
 
-/** Props worn on the sprout itself, drawn over its face so they move with it. */
+/** Props worn on the mascot itself, drawn over its face so they move with it. */
 function Wearable({ prop }: { prop: MascotProp }): ReactElement | null {
   if (prop === "sunglasses") {
     return (
@@ -460,22 +488,22 @@ function Wearable({ prop }: { prop: MascotProp }): ReactElement | null {
   return null;
 }
 
-/** A second, smaller sprout for the social questions, chatting with the main one. */
-function FriendSprout(): ReactElement {
+/** A second, smaller wheat buddy for the social questions, chatting with the main one. */
+function FriendWheat(): ReactElement {
   return (
     <g>
       <g className="mascot__friend">
         <g transform="translate(-30 98) scale(0.5)">
-          <path d="M120 66 C120 58 120 52 121 46" stroke={LEAF_DARK} strokeWidth="5" fill="none" strokeLinecap="round" />
-          <path d="M121 46 C108 28 86 30 82 39 C90 53 112 55 121 46 Z" fill="#a4dd6c" />
-          <path d="M121 46 C133 27 156 28 160 37 C152 52 131 55 121 46 Z" fill="#a4dd6c" />
-          <path d="M66 156 C64 98 86 64 120 64 C154 64 176 98 174 156 Z" fill="#8fd04f" />
+          <g transform="rotate(-8 121 64) translate(121 64) scale(1.3) translate(-121 -64)">
+            <WheatEar fill="#f2c200" />
+          </g>
+          <path d="M66 156 C64 98 86 64 120 64 C154 64 176 98 174 156 Z" fill="#ffdb00" />
           <ellipse cx="107" cy="108" rx="5.5" ry="8" fill={INK} />
           <ellipse cx="133" cy="108" rx="5.5" ry="8" fill={INK} />
           <path d="M110 118 Q120 130 130 118" stroke={INK} strokeWidth="4" fill="none" strokeLinecap="round" />
           <ellipse cx="94" cy="120" rx="8" ry="5" fill={PINK} />
           <ellipse cx="146" cy="120" rx="8" ry="5" fill={PINK} />
-          <path d="M56 170 C58 152 84 144 120 144 C156 144 182 152 184 170 C184 177 168 181 120 181 C72 181 56 177 56 170 Z" fill="#c9a27a" />
+          <path d="M56 170 C58 152 84 144 120 144 C156 144 182 152 184 170 C184 177 168 181 120 181 C72 181 56 177 56 170 Z" fill="#6b5641" />
         </g>
       </g>
       <g className="mascot__bubble mascot__bubble--one">
@@ -568,7 +596,7 @@ function Gear({ x, y, r, fill, reverse = false }: { x: number; y: number; r: num
   );
 }
 
-/** The sprout in its scene. `reacting` plays a quick hop (e.g. right after an answer). */
+/** The mascot in its scene. `reacting` plays a quick hop (e.g. right after an answer). */
 export function Mascot({
   scene,
   reacting = false,
@@ -577,7 +605,7 @@ export function Mascot({
 }: {
   scene: MascotScene;
   reacting?: boolean;
-  /** Extra SVG drawn on the sprout's body (in the same 240×190 space), e.g. a personality's hat. */
+  /** Extra SVG drawn on the mascot's body (in the same 240×190 space), e.g. a personality's hat. */
   accessory?: ReactNode;
   /** If given, the mascot is announced to screen readers with this text instead of being hidden. */
   title?: string;
@@ -585,29 +613,29 @@ export function Mascot({
   const { mood, prop, motion } = scene;
   // Unique gradient ids, in case two mascots are on screen at once.
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
-  const ids = { body: `sprout-body-${uid}`, leaf: `sprout-leaf-${uid}`, soil: `sprout-soil-${uid}` };
+  const ids = { body: `wheat-body-${uid}`, grain: `wheat-grain-${uid}`, soil: `wheat-soil-${uid}` };
   const blush = mood === "shy" || mood === "warm" ? 1 : 0.85;
 
   return (
     <svg
       className="mascot"
-      viewBox="0 -4 240 194"
+      viewBox="0 -26 240 216"
       focusable="false"
       {...(title ? { role: "img", "aria-label": title } : { "aria-hidden": true })}
     >
       <defs>
         <radialGradient id={ids.body} cx="62%" cy="30%" r="80%">
-          <stop offset="0%" stopColor="#b6e27c" />
-          <stop offset="55%" stopColor="#8fd04f" />
-          <stop offset="100%" stopColor="#6fb83a" />
+          <stop offset="0%" stopColor="#fff07a" />
+          <stop offset="55%" stopColor="#ffdb00" />
+          <stop offset="100%" stopColor="#f0b400" />
         </radialGradient>
-        <linearGradient id={ids.leaf} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#9fe064" />
-          <stop offset="100%" stopColor="#6cbf3b" />
+        <linearGradient id={ids.grain} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffe14d" />
+          <stop offset="100%" stopColor="#e0a400" />
         </linearGradient>
         <linearGradient id={ids.soil} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#d8b68f" />
-          <stop offset="100%" stopColor="#b48b62" />
+          <stop offset="0%" stopColor="#7d6650" />
+          <stop offset="100%" stopColor="#4f3f31" />
         </linearGradient>
       </defs>
 
@@ -617,10 +645,11 @@ export function Mascot({
       </g>
 
       <g className={`mascot__body mascot__body--${motion}${reacting ? " mascot__body--react" : ""}`}>
-        <Leaves mood={mood} ids={ids} />
-        {/* Dome, with a soft highlight */}
+        <Ear mood={mood} ids={ids} />
+        {/* Kernel, with a soft highlight and the grain's crease at the top */}
         <path d="M66 156 C64 98 86 64 120 64 C154 64 176 98 174 156 Z" fill={`url(#${ids.body})`} />
         <ellipse cx="140" cy="86" rx="15" ry="9" fill="#ffffff" opacity="0.22" transform="rotate(30 140 86)" />
+        <path d="M120 66 Q117 74 120 82" stroke={GRAIN_DARK} strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.45" />
         {/* Cheeks, eyes, mouth */}
         <ellipse cx="96" cy="120" rx="7.5" ry="5" fill={PINK} opacity={blush} />
         <ellipse cx="144" cy="120" rx="7.5" ry="5" fill={PINK} opacity={blush} />
@@ -631,12 +660,12 @@ export function Mascot({
         {mood === "oops" ? <path d="M160 82 q6 10 0 14 q-6 -4 0 -14 Z" fill={SKY} /> : null}
       </g>
 
-      {/* Soil mound, in front of the dome's base */}
+      {/* Soil mound, in front of the kernel's base */}
       <path
         d="M56 170 C58 152 84 144 120 144 C156 144 182 152 184 170 C184 177 168 181 120 181 C72 181 56 177 56 170 Z"
         fill={`url(#${ids.soil})`}
       />
-      <ellipse cx="98" cy="152" rx="10" ry="3" fill="#ffffff" opacity="0.18" />
+      <ellipse cx="98" cy="152" rx="10" ry="3" fill="#ffffff" opacity="0.14" />
 
       {prop === "peek" ? <rect x="138" y="54" width="92" height="126" rx="12" fill="#ffffff" opacity="0.92" /> : null}
     </svg>

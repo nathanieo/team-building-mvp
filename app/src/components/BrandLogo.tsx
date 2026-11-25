@@ -7,7 +7,7 @@ interface BrandLogoProps {
   size?: number;
   className?: string;
   /**
-   * "tile" is the solid green app icon (same drawing as public/favicon.svg).
+   * "tile" is the Shocker Yellow app icon (same drawing as public/favicon.svg).
    * "frosted" is a see-through version that blends into a colored background.
    */
   variant?: "tile" | "frosted";
@@ -16,7 +16,7 @@ interface BrandLogoProps {
 /** App icon: three people on a rounded square. */
 export function BrandLogo({ size = 48, className, variant = "tile" }: BrandLogoProps): ReactElement {
   // The gap around the middle person is cut out with a mask, so it is
-  // transparent on any background instead of painted green.
+  // transparent on any background instead of painted yellow.
   const maskId = `brand-gap-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const frosted = variant === "frosted";
 
@@ -41,11 +41,11 @@ export function BrandLogo({ size = 48, className, variant = "tile" }: BrandLogoP
         width="98.5"
         height="98.5"
         rx="24"
-        fill={frosted ? "rgba(255, 255, 255, 0.12)" : "#05a54b"}
+        fill={frosted ? "rgba(255, 255, 255, 0.12)" : "#ffdb00"}
         stroke={frosted ? "rgba(255, 255, 255, 0.28)" : "none"}
         strokeWidth="1.5"
       />
-      <g fill={frosted ? "rgba(255, 255, 255, 0.92)" : "#ffffff"}>
+      <g fill={frosted ? "rgba(255, 255, 255, 0.92)" : "#000000"}>
         <circle cx="25.5" cy="44.2" r="8.5" />
         <circle cx="74.5" cy="44.2" r="8.5" />
         <circle cx="50" cy="40.5" r="11.5" />
