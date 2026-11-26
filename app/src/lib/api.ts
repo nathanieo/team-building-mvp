@@ -102,7 +102,7 @@ export const api = {
       `/student/classes/${encodeURIComponent(code)}/questionnaires/${encodeURIComponent(id)}/answers/${encodeURIComponent(questionId)}`,
       { method: "PUT", body: JSON.stringify(body) },
     ),
-  // Student sign-up. The API doesn't have these two endpoints yet; demo mode answers them.
+  // Student sign-up: look up a class code, then join it.
   lookupJoinCode: (code: string) => request<JoinClassResponse>(`/join/${encodeURIComponent(code)}`),
   joinClass: (code: string, body: StudentJoinRequest) =>
     request<StudentJoinResponse>(`/join/${encodeURIComponent(code)}`, { method: "POST", body: JSON.stringify(body) }),

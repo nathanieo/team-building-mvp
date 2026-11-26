@@ -70,6 +70,8 @@ model Student {
   cohort      Cohort           @relation(fields: [cohortId], references: [id], onDelete: Cascade)
   displayName String           @db.Text
   email       String           @db.Text
+  /// The school-issued student ID, in capitals (e.g. A12B345).
+  schoolId    String           @db.Text
   joinedAt    DateTime         @default(now()) @db.Timestamptz(3)
   /// Set once every questionnaire is finished.
   completedAt DateTime?        @db.Timestamptz(3)
@@ -77,6 +79,7 @@ model Student {
   sessions    StudentSession[]
 
   @@unique([cohortId, email])
+  @@unique([cohortId, schoolId])
   @@map("students")
 }
 

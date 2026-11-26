@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 
 export const SESSION_COOKIE_NAME = "tb_session";
+export const STUDENT_SESSION_COOKIE_NAME = "tb_student_session";
 
 /** 256-bit random token sent to the browser. Only its hash is stored. */
 export function createSessionToken(): string {
@@ -32,12 +33,14 @@ export function readCookie(header: string | undefined, name: string): string | n
 export interface SessionCookieOptions {
   maxAgeSeconds: number;
   secure: boolean;
+  /** Defaults to the facilitator cookie. */
+  name?: string;
 }
 
 /** HttpOnly so page scripts cannot read it; SameSite=Lax blocks cross-site POSTs. */
 export function serializeSessionCookie(token: string, options: SessionCookieOptions): string {
   return [
-    `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}`,
+    `${options.name ?? SESSION_COOKIE_NAME}=${encodeURIComponent(token)}`,
     "Path=/",
     "HttpOnly",
     "SameSite=Lax",
