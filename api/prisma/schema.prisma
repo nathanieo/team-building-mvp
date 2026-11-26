@@ -65,15 +65,16 @@ model Cohort {
 
 /// A student who joined a class. Their questionnaire answers are in Answer.
 model Student {
-  id          String    @id @default(uuid()) @db.Uuid
-  cohortId    String    @db.Uuid
-  cohort      Cohort    @relation(fields: [cohortId], references: [id], onDelete: Cascade)
-  displayName String    @db.Text
-  email       String    @db.Text
-  joinedAt    DateTime  @default(now()) @db.Timestamptz(3)
+  id          String           @id @default(uuid()) @db.Uuid
+  cohortId    String           @db.Uuid
+  cohort      Cohort           @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  displayName String           @db.Text
+  email       String           @db.Text
+  joinedAt    DateTime         @default(now()) @db.Timestamptz(3)
   /// Set once every questionnaire is finished.
-  completedAt DateTime? @db.Timestamptz(3)
+  completedAt DateTime?        @db.Timestamptz(3)
   answers     Answer[]
+  sessions    StudentSession[]
 
   @@unique([cohortId, email])
   @@map("students")
@@ -123,4 +124,18 @@ model Answer {
   @@unique([studentId, questionId])
   @@index([studentId, questionnaireId])
   @@map("answers")
+}
+
+/// A student's login session. Only a SHA-256 hash of the cookie token is stored.
+model StudentSession {
+  id        String   @id @default(uuid()) @db.Uuid
+  tokenHash String   @unique @db.Text
+  studentId String   @db.Uuid
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([studentId])
+  @@index([expiresAt])
+  @@map("student_sessions")
 }
