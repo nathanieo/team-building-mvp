@@ -63,7 +63,7 @@ model Cohort {
   @@map("cohorts")
 }
 
-/// A student who joined a class. Questionnaire answers are added in the next MVP step.
+/// A student who joined a class. Their questionnaire answers are in Answer.
 model Student {
   id          String    @id @default(uuid()) @db.Uuid
   cohortId    String    @db.Uuid
@@ -73,6 +73,7 @@ model Student {
   joinedAt    DateTime  @default(now()) @db.Timestamptz(3)
   /// Set once every questionnaire is finished.
   completedAt DateTime? @db.Timestamptz(3)
+  answers     Answer[]
 
   @@unique([cohortId, email])
   @@map("students")
@@ -101,4 +102,25 @@ model Team {
 
   @@index([cohortId])
   @@map("teams")
+}
+
+/// One student's answer to one question.
+model Answer {
+  id               String   @id @default(uuid()) @db.Uuid
+  studentId        String   @db.Uuid
+  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  /// "work-style" or "skills"
+  questionnaireId  String   @db.Text
+  /// The question's id from the code, e.g. "ws-01" or "sk-projects".
+  questionId       String   @db.Text
+  /// A number 1–5 for scale questions, or a list of option ids for rank questions.
+  value            Json
+  /// Which version of the questions this was answered on, so old answers still make sense after edits.
+  questionsVersion String   @default("1") @db.Text
+  answeredAt       DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(3)
+
+  @@unique([studentId, questionId])
+  @@index([studentId, questionnaireId])
+  @@map("answers")
 }
