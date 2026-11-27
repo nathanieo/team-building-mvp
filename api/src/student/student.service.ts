@@ -1,8 +1,20 @@
-import { Injectable } from "@nestjs/common";
-import { buildSkillsQuestionnaire, buildWorkStyleQuestionnaire } from "@team-building-mvp/contracts";
-import type { QuestionnaireId, StudentHomeResponse } from "@team-building-mvp/contracts";
+import { HttpStatus, Injectable } from "@nestjs/common";
+import {
+  buildSkillsQuestionnaire,
+  buildWorkStyleQuestionnaire,
+  countAnswered,
+  isValidAnswer,
+} from "@team-building-mvp/contracts";
+import type {
+  Questionnaire,
+  QuestionnaireAnswer,
+  QuestionnaireId,
+  QuestionnaireResponse,
+  SaveAnswerResponse,
+  StudentHomeResponse,
+} from "@team-building-mvp/contracts";
 import { createSessionToken, hashSessionToken } from "../auth/session-token.js";
-import { validationError } from "../http/errors.js";
+import { apiError, validationError } from "../http/errors.js";
 import { STUDENT_SESSION_SECONDS } from "../join/join.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 
@@ -10,6 +22,27 @@ import { PrismaService } from "../prisma/prisma.service.js";
 export interface SignedInStudent {
   id: string;
   email: string;
+}
+
+/** The two questionnaires for a class. Skills ends by ranking the class's projects, if it has any. */
+function questionnairesFor(projects: Array<{ id: string; title: string }>): Questionnaire[] {
+  return [
+    buildWorkStyleQuestionnaire(),
+    buildSkillsQuestionnaire(projects.map((project) => ({ id: project.id, label: project.title }))),
+  ];
+}
+
+/** Turns saved answer rows into { questionId: answer }, skipping any that no longer fit their question. */
+function answersByQuestion(
+  questionnaire: Questionnaire,
+  rows: Array<{ questionId: string; value: unknown }>,
+): Record<string, QuestionnaireAnswer> {
+  const answers: Record<string, QuestionnaireAnswer> = {};
+  for (const row of rows) {
+    const question = questionnaire.questions.find((entry) => entry.id === row.questionId);
+    if (question && isValidAnswer(question, row.value)) answers[row.questionId] = row.value;
+  }
+  return answers;
 }
 
 export interface IssuedStudentLogin {
@@ -110,5 +143,70 @@ export class StudentService {
 
   async logout(token: string): Promise<void> {
     await this.prisma.studentSession.deleteMany({ where: { tokenHash: hashSessionToken(token) } });
+  }
+
+  /** The student's row in one class, or 404. */
+  private async enrolment(email: string, joinCode: string) {
+    const row = await this.prisma.student.findFirst({
+      where: { email, cohort: { joinCode } },
+      select: {
+        id: true,
+        completedAt: true,
+        cohort: { select: { projects: { select: { id: true, title: true } } } },
+      },
+    });
+    if (!row) throw apiError(HttpStatus.NOT_FOUND, "That questionnaire doesn't exist.");
+    return row;
+  }
+
+  /** One questionnaire with the answers this student has saved so far. */
+  async questionnaire(email: string, joinCode: string, id: string): Promise<QuestionnaireResponse> {
+    const row = await this.enrolment(email, joinCode);
+    const questionnaire = questionnairesFor(row.cohort.projects).find((entry) => entry.id === id);
+    if (!questionnaire) throw apiError(HttpStatus.NOT_FOUND, "That questionnaire doesn't exist.");
+
+    const saved = await this.prisma.answer.findMany({
+      where: { studentId: row.id, questionnaireId: questionnaire.id },
+      select: { questionId: true, value: true },
+    });
+    return { questionnaire, answers: answersByQuestion(questionnaire, saved) };
+  }
+
+  /** Saves one answer: creates the row the first time, updates it after that. */
+  async saveAnswer(
+    email: string,
+    joinCode: string,
+    id: string,
+    questionId: string,
+    answer: unknown,
+  ): Promise<SaveAnswerResponse> {
+    const row = await this.enrolment(email, joinCode);
+    const questionnaires = questionnairesFor(row.cohort.projects);
+    const questionnaire = questionnaires.find((entry) => entry.id === id);
+    const question = questionnaire?.questions.find((entry) => entry.id === questionId);
+    if (!questionnaire || !question) throw apiError(HttpStatus.NOT_FOUND, "That question doesn't exist.");
+    if (!isValidAnswer(question, answer)) {
+      throw apiError(HttpStatus.BAD_REQUEST, "That answer doesn't fit the question.");
+    }
+
+    await this.prisma.answer.upsert({
+      where: { studentId_questionId: { studentId: row.id, questionId: question.id } },
+      create: { studentId: row.id, questionnaireId: questionnaire.id, questionId: question.id, value: answer },
+      update: { value: answer },
+    });
+
+    // Work out progress, and mark the student finished once both questionnaires are complete.
+    const saved = await this.prisma.answer.findMany({
+      where: { studentId: row.id },
+      select: { questionnaireId: true, questionId: true, value: true },
+    });
+    const answeredIn = (entry: Questionnaire) =>
+      countAnswered(entry, answersByQuestion(entry, saved.filter((item) => item.questionnaireId === entry.id)));
+    const finished = questionnaires.every((entry) => answeredIn(entry) === entry.questions.length);
+    if (finished && !row.completedAt) {
+      await this.prisma.student.update({ where: { id: row.id }, data: { completedAt: new Date() } });
+    }
+
+    return { answered: answeredIn(questionnaire), total: questionnaire.questions.length };
   }
 }
