@@ -6,7 +6,7 @@ import { PrismaService } from "../prisma/prisma.service.js";
 
 /** Students stay logged in for a term-sized stretch, not a single sitting. */
 const STUDENT_SESSION_DAYS = 30;
-const STUDENT_SESSION_SECONDS = STUDENT_SESSION_DAYS * 24 * 60 * 60;
+export const STUDENT_SESSION_SECONDS = STUDENT_SESSION_DAYS * 24 * 60 * 60;
 
 /** What joinClass hands back: the secret token for the cookie, and who joined. */
 export interface IssuedStudentSession {

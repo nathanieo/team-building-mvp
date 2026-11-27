@@ -4,10 +4,11 @@ import { CohortsModule } from "./cohorts/cohorts.module.js";
 import { HealthController } from "./health/health.controller.js";
 import { JoinModule } from "./join/join.module.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
+import { StudentModule } from "./student/student.module.js";
 
 /** Root module. Next MVP steps (student join, questionnaires, teams) add feature modules here. */
 @Module({
-  imports: [PrismaModule, AuthModule, CohortsModule, JoinModule],
+  imports: [PrismaModule, AuthModule, CohortsModule, JoinModule, StudentModule],
   controllers: [HealthController],
 })
 export class AppModule {}

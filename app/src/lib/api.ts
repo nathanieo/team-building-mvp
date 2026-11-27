@@ -88,7 +88,7 @@ export const api = {
   listCohorts: () => request<CohortListResponse>("/cohorts"),
   createCohort: (body: CreateCohortRequest) =>
     request<CohortResponse>("/cohorts", { method: "POST", body: JSON.stringify(body) }),
-  // Student home and sign-in. Not in the API yet; demo mode answers them.
+  // Student home, log in and log out.
   studentHome: () => request<StudentHomeResponse>("/student/me"),
   studentLogin: (body: StudentLoginRequest) =>
     request<StudentHomeResponse>("/student/login", { method: "POST", body: JSON.stringify(body) }),
